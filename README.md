@@ -79,22 +79,6 @@ c:\keskindevweb\
     └── js/
         ├── main.js         # Ana sayfa dinamik yükleyicisi ve partikül canvas
         ├── blog.js         # Blog arama, filtre ve modal okuyucu
-        └── admin.js        # Yönetici oturumu, reklam kasası CRUD ve ayarlar
-```
-    ├── admin.html          # Yönetim paneli & Reklam kasası
-    ├── robots.txt          # Arama motoru robot direktifleri
-    ├── sitemap.xml         # Site haritası
-    ├── assets/
-    │   ├── logo.svg        # KeskinDev vektörel logo
-    │   └── favicon.svg     # Modern sekme simgesi
-    ├── css/
-    │   ├── main.css        # Genel stil ve tema sistemi
-    │   ├── blog.css        # Blog ve okuyucu stilleri
-    │   └── admin.css       # Yönetim paneli ve kasa stilleri
-    └── js/
-        ├── main.js         # Ana sayfa dinamik yükleyicisi ve partikül canvas
-        ├── blog.js         # Blog arama, filtre ve modal okuyucu
-        └── admin.js        # Yönetici oturumu, reklam kasası CRUD ve ayarlar
 ```
 
 ---
