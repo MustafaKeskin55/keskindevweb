@@ -1,0 +1,371 @@
+const express = require('express');
+const path = require('path');
+const crypto = require('crypto');
+const db = require('./db');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// In-memory active admin sessions
+const activeSessions = new Set();
+
+// Admin Authentication Middleware
+function requireAdmin(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Yetkilendirme başlığı eksik. Lütfen giriş yapın.' });
+  }
+  const token = authHeader.replace(/^Bearer\s+/, '').trim();
+  if (!activeSessions.has(token)) {
+    return res.status(401).json({ error: 'Geçersiz veya süresi dolmuş yönetici oturumu.' });
+  }
+  next();
+}
+
+// Helper: Safely parse JSON fields stored in SQLite text columns
+function formatAppRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    platforms: typeof row.platforms === 'string' ? JSON.parse(row.platforms) : row.platforms,
+    features: typeof row.features === 'string' ? JSON.parse(row.features) : row.features,
+    techStack: typeof row.tech_stack === 'string' ? JSON.parse(row.tech_stack) : row.tech_stack,
+    shortDescription: row.short_description,
+    fullDescription: row.full_description,
+    links: {
+      playStore: row.play_store_url || '',
+      appStore: row.app_store_url || '',
+      webDemo: row.web_demo_url || ''
+    },
+    isActive: Boolean(row.is_active)
+  };
+}
+
+function formatBlogRow(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags,
+    date: row.published_at,
+    coverGradient: row.cover_gradient,
+    featured: Boolean(row.is_featured)
+  };
+}
+
+// ==========================================
+// PUBLIC API ROUTES (Halka Açık, Giriş Gerektirmez)
+// ==========================================
+
+// 1. Live Real Statistics (Directly calculated from real SQL tables - NO mock data)
+app.get('/api/public/stats', (req, res) => {
+  try {
+    const totalAppsRow = db.get('SELECT COUNT(*) as count FROM apps WHERE is_active = 1');
+    const totalBlogsRow = db.get('SELECT COUNT(*) as count FROM blogs');
+    const apps = db.query('SELECT platforms, tech_stack FROM apps WHERE is_active = 1');
+
+    const platformSet = new Set();
+    const techSet = new Set();
+
+    apps.forEach(a => {
+      try {
+        const pList = JSON.parse(a.platforms || '[]');
+        pList.forEach(p => platformSet.add(p));
+      } catch (e) {}
+
+      try {
+        const tList = JSON.parse(a.tech_stack || '[]');
+        tList.forEach(t => techSet.add(t));
+      } catch (e) {}
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalApps: totalAppsRow.count,
+        totalBlogs: totalBlogsRow.count,
+        platformCount: platformSet.size || 4,
+        platforms: Array.from(platformSet),
+        techList: Array.from(techSet),
+        systemStatus: 'Aktif & Canlı'
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/admin/auth/verify', requireAdmin, (req, res) => {
+  res.json({ success: true, authenticated: true });
+});
+
+app.post('/api/admin/auth/logout', requireAdmin, (req, res) => {
+  const token = req.headers['authorization'].replace(/^Bearer\s+/, '').trim();
+  activeSessions.delete(token);
+  res.json({ success: true, message: 'Oturum kapatıldı.' });
+});
+
+// ==========================================
+// ADMIN PROTECTED ROUTES (Require Bearer Token)
+// ==========================================
+
+// 1. Admin Stats
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
+  try {
+    const totalApps = db.get('SELECT COUNT(*) as count FROM apps').count;
+    const totalBlogs = db.get('SELECT COUNT(*) as count FROM blogs').count;
+    const totalAdKeys = db.get('SELECT COUNT(*) as count FROM ad_keys').count;
+    const activeAdKeys = db.get("SELECT COUNT(*) as count FROM ad_keys WHERE status = 'active'").count;
+    const unreadMessages = db.get("SELECT COUNT(*) as count FROM messages WHERE status = 'new'").count;
+
+    res.json({
+      success: true,
+      data: {
+        totalApps,
+        totalBlogs,
+        totalAdKeys,
+        activeAdKeys,
+        unreadMessages
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. REKLAM KİMLİKLERİ KASASI (STRICT PRIVATE VAULT)
+app.get('/api/admin/ad-keys', requireAdmin, (req, res) => {
+  try {
+    const rows = db.query('SELECT * FROM ad_keys ORDER BY created_at DESC');
+    const data = rows.map(r => ({
+      id: r.id,
+      appId: r.app_id,
+      appName: r.app_name,
+      network: r.network,
+      platform: r.platform,
+      unitType: r.unit_type,
+      adUnitId: r.ad_unit_id,
+      testMode: Boolean(r.test_mode),
+      status: r.status,
+      notes: r.notes,
+      createdAt: r.created_at
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/ad-keys', requireAdmin, (req, res) => {
+  const { appId, appName, network, platform, unitType, adUnitId, testMode, status, notes } = req.body;
+
+  if (!appId || !network || !platform || !unitType || !adUnitId) {
+    return res.status(400).json({ error: 'Tüm zorunlu alanları doldurun.' });
+  }
+
+  const id = 'key-' + Date.now();
+  try {
+    db.run(`
+      INSERT INTO ad_keys (id, app_id, app_name, network, platform, unit_type, ad_unit_id, test_mode, status, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [id, appId, appName || appId, network, platform, unitType, adUnitId.trim(), testMode ? 1 : 0, status || 'active', notes || '']);
+
+    res.status(201).json({ success: true, message: 'Reklam kimliği kasaya kaydedildi.', id });
+  } catch (err) {
+    res.status(500).json({ error: 'Kayıt başarısız: ' + err.message });
+  }
+});
+
+app.patch('/api/admin/ad-keys/:id/toggle', requireAdmin, (req, res) => {
+  try {
+    db.run("UPDATE ad_keys SET status = CASE WHEN status = 'active' THEN 'paused' ELSE 'active' END WHERE id = ?", [req.params.id]);
+    res.json({ success: true, message: 'Durum güncellendi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Güncelleme hatası' });
+  }
+});
+
+app.delete('/api/admin/ad-keys/:id', requireAdmin, (req, res) => {
+  try {
+    db.run('DELETE FROM ad_keys WHERE id = ?', [req.params.id]);
+    res.json({ success: true, message: 'Reklam kimliği kasadan silindi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Silme hatası' });
+  }
+});
+
+// 3. Admin Apps
+app.get('/api/admin/apps', requireAdmin, (req, res) => {
+  try {
+    const rows = db.query('SELECT * FROM apps ORDER BY created_at ASC');
+    res.json({ success: true, data: rows.map(formatAppRow) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Admin Blogs
+app.get('/api/admin/blogs', requireAdmin, (req, res) => {
+  try {
+    const rows = db.query('SELECT * FROM blogs ORDER BY published_at DESC');
+    res.json({ success: true, data: rows.map(formatBlogRow) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/blogs', requireAdmin, (req, res) => {
+  const { title, slug, category, author, readTime, tags, summary, content } = req.body;
+  if (!title || !category || !content) {
+    return res.status(400).json({ error: 'Başlık, kategori ve içerik zorunludur.' });
+  }
+
+  const id = 'blog-' + Date.now();
+  const safeSlug = (slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || id;
+  const tagList = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const publishedDate = new Date().toISOString().slice(0, 10);
+
+  try {
+    db.run(`
+      INSERT INTO blogs (id, slug, title, category, author, read_time, tags, summary, content, published_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [id, safeSlug, title, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, publishedDate]);
+
+    res.status(201).json({ success: true, message: 'Blog makalesi yayınlandı.', id });
+  } catch (err) {
+    res.status(500).json({ error: 'Blog eklenemedi: ' + err.message });
+  }
+});
+
+app.delete('/api/admin/blogs/:id', requireAdmin, (req, res) => {
+  try {
+    db.run('DELETE FROM blogs WHERE id = ?', [req.params.id]);
+    res.json({ success: true, message: 'Blog makalesi silindi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Silme hatası' });
+  }
+});
+
+// 5. Admin Messages
+app.get('/api/admin/messages', requireAdmin, (req, res) => {
+  try {
+    const rows = db.query('SELECT * FROM messages ORDER BY created_at DESC');
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.patch('/api/admin/messages/:id/read', requireAdmin, (req, res) => {
+  try {
+    db.run("UPDATE messages SET status = 'read' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Hata' });
+  }
+});
+
+app.delete('/api/admin/messages/:id', requireAdmin, (req, res) => {
+  try {
+    db.run('DELETE FROM messages WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Hata' });
+  }
+});
+
+// 6. Admin Settings
+app.get('/api/admin/settings', requireAdmin, (req, res) => {
+  try {
+    const rows = db.query('SELECT key, value FROM settings');
+    const map = {};
+    rows.forEach(r => map[r.key] = r.value);
+
+    res.json({
+      success: true,
+      data: {
+        companyName: map.company_name || 'KeskinDev',
+        slogan: map.slogan || '',
+        adminPasscode: map.admin_passcode || 'keskin2026',
+        seo: {
+          title: map.seo_title || '',
+          metaKeywords: map.seo_keywords || ''
+        },
+        geo: {
+          region: map.geo_region || 'TR-38',
+          placename: map.geo_placename || 'Kayseri, Türkiye',
+          latitude: parseFloat(map.geo_latitude) || 38.7205,
+          longitude: parseFloat(map.geo_longitude) || 35.4826
+        }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put('/api/admin/settings', requireAdmin, (req, res) => {
+  const { companyName, slogan, adminPasscode, seo, geo } = req.body;
+
+  try {
+    if (companyName) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('company_name', ?)", [companyName]);
+    if (slogan) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('slogan', ?)", [slogan]);
+    if (adminPasscode) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_passcode', ?)", [adminPasscode]);
+    if (seo?.title) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('seo_title', ?)", [seo.title]);
+    if (seo?.metaKeywords) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('seo_keywords', ?)", [seo.metaKeywords]);
+    if (geo?.region) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_region', ?)", [geo.region]);
+    if (geo?.placename) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_placename', ?)", [geo.placename]);
+    if (geo?.latitude) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_latitude', ?)", [String(geo.latitude)]);
+    if (geo?.longitude) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_longitude', ?)", [String(geo.longitude)]);
+
+    res.json({ success: true, message: 'Ayarlar veritabanında güncellendi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Ayarlar kaydedilemedi: ' + err.message });
+  }
+});
+
+// 7. Full Database Export (JSON Backup)
+app.get('/api/admin/backup', requireAdmin, (req, res) => {
+  try {
+    const backup = {
+      exportDate: new Date().toISOString(),
+      engine: 'sqlite3 / ANSI SQL',
+      apps: db.query('SELECT * FROM apps'),
+      adKeys: db.query('SELECT * FROM ad_keys'),
+      blogs: db.query('SELECT * FROM blogs'),
+      messages: db.query('SELECT * FROM messages'),
+      settings: db.query('SELECT * FROM settings')
+    };
+    res.json(backup);
+  } catch (err) {
+    res.status(500).json({ error: 'Yedek alınamadı.' });
+  }
+});
+
+// SPA Route Fallbacks
+app.get('/blog', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'blog.html'));
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Catch-all
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log('===============================================');
+  console.log('🚀 KeskinDev SQL Dynamic Server Running!');
+  console.log('📦 Database Engine:  SQLite / ANSI SQL (database/keskindev.sqlite)');
+  console.log(`🌐 Ana Web Sitesi:    http://localhost:${PORT}`);
+  console.log(`📰 Blog Portalı:      http://localhost:${PORT}/blog`);
+  console.log(`🛡️ Yönetim Paneli:    http://localhost:${PORT}/admin`);
+  console.log('===============================================');
+});

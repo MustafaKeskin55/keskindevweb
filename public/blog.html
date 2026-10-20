@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeskinDev | Mühendislik Blogu &amp; Mimari Notları</title>
+  <meta name="description" content="Mümin Pusulası, Site Yönetimi ve Ticko projelerinde uygulanan mimari prensipler, sensör kalibrasyonu, SaaS ve mobil mühendislik rehberleri." />
+  <meta name="keywords" content="keskindev blog, mümin pusulası mimari, diyanet vakit hesaplama api, kıble pusulası sensör filtreleme, saas mimarisi, flutter mobil yazılım" />
+  <meta name="author" content="Mustafa Keskin, KeskinDev" />
+  <link rel="canonical" href="https://keskindev.com/blog" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/blog.css" />
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="/" class="logo-wrap" title="KeskinDev Ana Sayfa">
+        <img src="/assets/logo.svg" alt="KeskinDev Logo" />
+      </a>
+
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="/" class="nav-link">Ana Sayfa</a></li>
+          <li><a href="/#products" class="nav-link">Ürünlerimiz</a></li>
+          <li><a href="/blog" class="nav-link active">Mühendislik Blogu</a></li>
+          <li><a href="/#contact" class="nav-link">İletişim</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/" class="btn btn-secondary">Web Sitesine Dön</a>
+        <a href="/admin" class="btn btn-admin">
+          <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Yönetim Paneli</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Blog Hero & Filter Toolbar -->
+  <section class="blog-hero">
+    <div class="container">
+      <div class="section-tag">
+        <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Teknik Dokümantasyon &amp; Notlar
+      </div>
+      <h1 class="hero-title" style="font-size: 2.6rem; margin-bottom: 12px;">
+        KeskinDev <span class="gradient-text-accent">Mühendislik Blogu</span>
+      </h1>
+      <p class="hero-subtitle" style="margin-bottom: 28px;">
+        Mobil mimari, hassas sensör kalibrasyonları, yüksek eşzamanlı SaaS sistemleri ve gerçek saha pratikleri.
+      </p>
+
+      <!-- Category Filter Pills -->
+      <div class="category-filters" id="category-filters">
+        <button class="filter-pill active" data-cat="all">Tüm Yazılar</button>
+        <button class="filter-pill" data-cat="Mobil Geliştirme">Mobil Geliştirme</button>
+        <button class="filter-pill" data-cat="SaaS & Mimari">SaaS &amp; Mimari</button>
+        <button class="filter-pill" data-cat="Üretkenlik & Biletleme">Üretkenlik &amp; Biletleme</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Blog Listing Section -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <!-- Featured Article Spotlight -->
+      <div id="featured-blog-wrap" class="featured-article-wrap">
+        <!-- js/blog.js tarafından doldurulur -->
+      </div>
+
+      <!-- Articles Grid -->
+      <h2 style="font-size: 1.5rem; margin-bottom: 20px;">Tüm Makaleler</h2>
+      <div class="blog-preview-grid" id="blog-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-muted);">
+          Makaleler yükleniyor...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Blog Reader Modal -->
+  <div id="blog-reader-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reader-title">
+    <div class="modal-reader-card">
+      <div class="modal-reader-header">
+        <span class="hero-badge" style="margin: 0; padding: 4px 10px; font-size: 0.75rem;">Mühendislik Makalesi</span>
+        <button id="modal-close" class="modal-close-btn" aria-label="Kapat">
+          <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-reader-content">
+        <div class="article-hero-header">
+          <h1 id="reader-title" style="font-size: 2rem; line-height: 1.3; margin-bottom: 8px;">Yazı Başlığı</h1>
+          <div id="reader-meta" class="article-meta-row">
+            <!-- Yazar, tarih ve okuma süresi -->
+          </div>
+        </div>
+
+        <div id="reader-body" class="article-body">
+          <!-- Markdown formatındaki makale içeriği -->
+        </div>
+
+        <div id="reader-tags" class="article-tags-wrap">
+          <!-- Etiketler -->
+        </div>
+
+        <div style="margin-top: 36px; padding: 20px 24px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 2px;">KeskinDev ekibi ile çalışmak ister misiniz?</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Projeleriniz ve kurumsal yazılım ihtiyaçlarınız için iletişime geçin.</p>
+          </div>
+          <a href="/#contact" class="btn btn-primary" style="font-size: 0.82rem;">
+            <span>İletişim Formu</span>
+            <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 KeskinDev. Tüm hakları saklıdır.
+        </div>
+        <div>
+          <a href="/" class="footer-link" style="margin-right: 18px;">Ana Sayfa</a>
+          <a href="/#products" class="footer-link" style="margin-right: 18px;">Ürünler</a>
+          <a href="/admin" class="footer-link" style="color: #93c5fd;">Yönetim Paneli</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/blog.js"></script>
+</body>
+</html>

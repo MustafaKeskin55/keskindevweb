@@ -1,0 +1,23 @@
+﻿{
+  "name": "keskindev",
+  "version": "1.0.0",
+  "description": "KeskinDev Corporate Platform - Mümin Pusulası, Site Yönetimi, Ticko & Enterprise Solutions",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "keskindev",
+    "mumin-pusulasi",
+    "site-yonetimi",
+    "ticko",
+    "tech-agency"
+  ],
+  "author": "Mustafa Keskin",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}

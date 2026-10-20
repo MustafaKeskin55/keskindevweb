@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeskinDev | Yönetim Konsolu &amp; Reklam Kimlikleri Kasası</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- 1. Master PIN Lock Screen -->
+  <div id="lock-screen" class="lock-screen-wrap">
+    <div class="lock-card">
+      <div class="lock-icon-wrap">
+        <svg style="width: 26px; height: 26px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="lock-title">KeskinDev Yönetici Girişi</h2>
+      <p class="lock-subtitle">Sistem ve Reklam Kimlikleri Kasasına erişmek için yönetici şifresini girin.</p>
+
+      <form id="admin-login-form">
+        <input 
+          type="password" 
+          id="admin-pin-input" 
+          class="pin-input" 
+          placeholder="••••••••" 
+          autocomplete="current-password"
+          required 
+          autofocus
+        />
+
+        <div id="login-error" class="toast-notice error" style="display: none; position: static; margin-bottom: 16px; justify-content: center;"></div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+          <span>Doğrula ve Giriş Yap</span>
+          <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+
+        <div style="margin-top: 18px; font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+          Giriş Şifresi: <code>keskin2026</code>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Authenticated Admin Dashboard Layout -->
+  <div id="admin-layout" class="admin-layout" style="display: none;">
+    
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="/" target="_blank" class="sidebar-logo">
+          <svg style="width: 24px; height: 24px; color: #3b82f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+          <span>KeskinDev</span>
+          <span class="sidebar-badge">Konsol</span>
+        </a>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li>
+          <button class="nav-tab-btn active" data-tab="overview">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>Genel Bakış</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn vault-tab" data-tab="vault">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Reklam Kasası</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="apps">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            <span>Uygulamalar</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="blogs">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>Blog Yazıları</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="messages">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>Gelen Mesajlar</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="settings">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span>SEO &amp; GEO Ayarları</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="backup">
+            <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Veri Yedekleme</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button id="btn-admin-logout" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 10px;">
+          <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Oturumu Kapat</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1 id="admin-page-title" class="admin-topbar-title">Genel Bakış &amp; İstatistikler</h1>
+        <div class="admin-topbar-actions">
+          <a href="/" target="_blank" class="btn btn-secondary">
+            <span>Web Sitesi</span>
+            <svg style="width: 13px; height: 13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>
+          <a href="/blog" target="_blank" class="btn btn-secondary">
+            <span>Blog Portalı</span>
+            <svg style="width: 13px; height: 13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <div class="admin-content-view">
+        
+        <!-- TAB 1: OVERVIEW -->
+        <div id="tab-overview" class="tab-pane active">
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon-wrap" style="color: #3b82f6;">
+                <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-val" id="stat-total-apps">3</span>
+                <span class="metric-title">Yayındaki Uygulamalar</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-wrap" style="color: #60a5fa;">
+                <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-val" id="stat-total-adkeys">0 / 0</span>
+                <span class="metric-title">Kayıtlı Reklam Kimlikleri</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-wrap" style="color: #10b981;">
+                <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-val" id="stat-total-blogs">3</span>
+                <span class="metric-title">Yayınlanan Blog Yazısı</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon-wrap" style="color: #fbbf24;">
+                <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-val" id="stat-unread-msg">0</span>
+                <span class="metric-title">Yeni İletişim Mesajı</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Cards -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+            <div class="admin-table-card" style="padding: 24px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 1.15rem; color: #ffffff;">Gizli Reklam Kimlikleri Kasası</h3>
+              <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin-bottom: 20px;">
+                Mümin Pusulası, Site Yönetimi ve diğer tüm projelerinizin AdMob, Unity Ads vb. birim kimliklerini bu kasada güvenle saklayın. Kimlikler şifrelidir ve dış API'lere asla açılmaz.
+              </p>
+              <button class="btn btn-primary" onclick="switchToTab('vault')">
+                <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Kasaya Git &amp; Kimlik Yönetimi</span>
+              </button>
+            </div>
+
+            <div class="admin-table-card" style="padding: 24px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 1.15rem; color: #ffffff;">Teknik Blog Portalı (CMS)</h3>
+              <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; margin-bottom: 20px;">
+                Mobil mimari, sensör optimizasyonu ve SaaS mühendisliği üzerine teknik makalelerinizi tek tıkla yayınlayın ve düzenleyin.
+              </p>
+              <button class="btn btn-secondary" onclick="switchToTab('blogs')">
+                <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Makaleleri Yönet</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: REKLAM KIMLIKLERI KASASI (VAULT) -->
+        <div id="tab-vault" class="tab-pane">
+          
+          <div class="vault-banner">
+            <div class="vault-banner-info">
+              <div class="vault-shield-wrap">
+                <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="vault-banner-title">Gizli Reklam Kimlikleri Kasası</h3>
+                <p class="vault-banner-desc">
+                  Bu kimlikler halka açık API'de veya genel web sitesinde asla listelenmez. Yalnızca kimliği doğrulanmış yönetici oturumu ile erişilebilir.
+                </p>
+              </div>
+            </div>
+
+            <button id="btn-add-adkey" class="btn btn-primary">
+              <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>+ Yeni Kimlik Ekle</span>
+            </button>
+          </div>
+
+          <div class="admin-table-card">
+            <div class="table-toolbar">
+              <div class="table-filter-group">
+                <label style="font-size: 0.84rem; color: var(--text-muted); font-weight: 600;">Uygulama:</label>
+                <select id="filter-ad-app" class="filter-select">
+                  <option value="all">Tüm Uygulamalar</option>
+                  <option value="mumin-pusulasi">Mümin Pusulası</option>
+                  <option value="site-yonetimi">Site Yönetimi</option>
+                  <option value="ticko">Ticko</option>
+                </select>
+
+                <label style="font-size: 0.84rem; color: var(--text-muted); font-weight: 600; margin-left: 12px;">Platform:</label>
+                <select id="filter-ad-platform" class="filter-select">
+                  <option value="all">Tümü</option>
+                  <option value="android">Android</option>
+                  <option value="ios">iOS</option>
+                  <option value="web">Web</option>
+                </select>
+              </div>
+
+              <div style="font-size: 0.82rem; color: var(--text-muted);">
+                Ad Unit ID yanındaki simgeye tıklayarak tek tıkla kopyalayabilirsiniz.
+              </div>
+            </div>
+
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>UYGULAMA &amp; AĞ</th>
+                    <th>PLATFORM</th>
+                    <th>BİRİM TİPİ</th>
+                    <th>REKLAM KİMLİĞİ (AD UNIT ID)</th>
+                    <th>DURUM</th>
+                    <th>NOTLAR</th>
+                    <th>İŞLEMLER</th>
+                  </tr>
+                </thead>
+                <tbody id="ad-keys-table-body">
+                  <!-- Rendered dynamically via admin.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <div id="ad-keys-empty" class="table-empty-state" style="display: none;">
+              <div class="empty-icon-wrap">
+                <svg style="width: 26px; height: 26px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <h4 class="empty-title">Kasada henüz kayıtlı reklam kimliği bulunmuyor</h4>
+              <p class="empty-desc">
+                AdMob veya diğer reklam ağlarına ait birim kimliklerinizi (Banner, Geçiş, Ödüllü) güvenli kasaya eklemek için aşağıdaki butonu kullanabilirsiniz.
+              </p>
+              <button class="btn btn-primary" onclick="openAdKeyModal()" style="margin-top: 8px;">
+                <span>+ İlk Reklam Kimliğini Ekle</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: APPS MANAGEMENT -->
+        <div id="tab-apps" class="tab-pane">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.2rem; color: #ffffff;">Yayındaki Yazılım Ürünleri</h3>
+              <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem;">
+                KeskinDev bünyesinde geliştirilen ve yayında olan tüm mobil ve kurumsal sistemler.
+              </p>
+            </div>
+          </div>
+
+          <div id="admin-apps-list" class="admin-apps-grid">
+            <!-- Rendered dynamically via admin.js -->
+          </div>
+        </div>
+
+        <!-- TAB 4: BLOGS MANAGEMENT -->
+        <div id="tab-blogs" class="tab-pane">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.2rem; color: #ffffff;">Teknik Blog Yazıları</h3>
+              <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem;">
+                Yayınlanmış teknik makaleleri yönetin veya yeni bir mimari rehber yayınlayın.
+              </p>
+            </div>
+
+            <button id="btn-add-blog" class="btn btn-primary">
+              <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>+ Yeni Makale Yaz</span>
+            </button>
+          </div>
+
+          <div class="admin-table-card">
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>MAKALE BAŞLIĞI</th>
+                    <th>KATEGORİ</th>
+                    <th>TARİH</th>
+                    <th>OKUNMA</th>
+                    <th>İŞLEMLER</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-blogs-table-body">
+                  <!-- Rendered dynamically via admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: MESSAGES INBOX -->
+        <div id="tab-messages" class="tab-pane">
+          <div style="margin-bottom: 20px;">
+            <h3 style="margin: 0 0 4px 0; font-size: 1.2rem; color: #ffffff;">Gelen İletişim Mesajları</h3>
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem;">
+              Web sitesi iletişim formundan gelen gerçek ziyaretçi ve müşteri talepleri.
+            </p>
+          </div>
+
+          <div id="admin-messages-list">
+            <!-- Rendered dynamically via admin.js -->
+          </div>
+        </div>
+
+        <!-- TAB 6: SETTINGS (SEO, GEO & AUTH) -->
+        <div id="tab-settings" class="tab-pane">
+          <div class="admin-table-card" style="padding: 28px; max-width: 800px;">
+            <h3 style="margin: 0 0 6px 0; font-size: 1.25rem; color: #ffffff;">Sistem, SEO &amp; GEO Konum Ayarları</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0 0 24px 0;">
+              Arama motoru indeksleme parametreleri, bölgesel koordinatlar ve yönetici güvenlik anahtarı.
+            </p>
+
+            <form id="admin-settings-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Şirket Adı</label>
+                  <input type="text" name="companyName" class="form-control" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Slogan</label>
+                  <input type="text" name="slogan" class="form-control" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">SEO Meta Başlık (Title)</label>
+                <input type="text" name="metaTitle" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">SEO Anahtar Kelimeler (Virgülle ayrılmış)</label>
+                <textarea name="metaKeywords" class="form-control" rows="2"></textarea>
+              </div>
+
+              <h4 style="margin: 28px 0 16px 0; color: #93c5fd; font-size: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px;">
+                Coğrafi (GEO Meta) Konum Bilgileri (Kayseri / Melikgazi)
+              </h4>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Geo Region (Bölge Kodu)</label>
+                  <input type="text" name="geoRegion" class="form-control" placeholder="TR-38" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Geo Placename (Şehir / İlçe)</label>
+                  <input type="text" name="geoPlacename" class="form-control" placeholder="Kayseri, Melikgazi, Türkiye" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Enlem (Latitude)</label>
+                  <input type="text" name="geoLatitude" class="form-control" placeholder="38.7205" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Boylam (Longitude)</label>
+                  <input type="text" name="geoLongitude" class="form-control" placeholder="35.4826" required />
+                </div>
+              </div>
+
+              <h4 style="margin: 28px 0 16px 0; color: #f87171; font-size: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px;">
+                Panel Güvenlik Şifresi
+              </h4>
+
+              <div class="form-group">
+                <label class="form-label">Yönetici Giriş PIN / Şifresi</label>
+                <input type="text" name="adminPasscode" class="form-control" placeholder="keskin2026" required />
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+                <span>Ayarları Güncelle</span>
+                <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- TAB 7: BACKUP & EXPORT -->
+        <div id="tab-backup" class="tab-pane">
+          <div class="admin-table-card" style="padding: 28px; max-width: 600px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 1.25rem; color: #ffffff;">Veri Tabanı Dışa Aktarımı</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.88rem; margin: 0 0 22px 0;">
+              Tüm kayıtlı uygulamalar, gizli reklam kimlikleri, teknik blog makaleleri ve SEO ayarlarını tek bir JSON dosyasında anında bilgisayarınıza yedekleyin.
+            </p>
+            <button id="btn-download-backup" class="btn btn-primary">
+              <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>JSON Yedek Dosyasını İndir</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==========================================
+       MODAL 1: ADD NEW AD KEY (STRICT OVERLAY)
+       ========================================== -->
+  <div id="modal-add-adkey" class="modal-overlay">
+    <div class="admin-modal-card">
+      <div class="admin-modal-title">
+        <span>Kasaya Yeni Reklam Kimliği Ekle</span>
+        <button type="button" class="modal-close-btn modal-close-trigger" title="Kapat">
+          <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="form-add-adkey">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Uygulama *</label>
+            <select name="appId" class="form-control" required>
+              <option value="mumin-pusulasi">Mümin Pusulası</option>
+              <option value="site-yonetimi">Site Yönetimi</option>
+              <option value="ticko">Ticko</option>
+              <option value="keskindev-custom">Özel Proje</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Reklam Ağı *</label>
+            <select name="network" class="form-control" required>
+              <option value="Google AdMob">Google AdMob</option>
+              <option value="Unity Ads">Unity Ads</option>
+              <option value="AppLovin MAX">AppLovin MAX</option>
+              <option value="Meta Audience">Meta Audience</option>
+              <option value="Özel Sponsor">Özel Sponsor</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Platform *</label>
+            <select name="platform" class="form-control" required>
+              <option value="Android">Android</option>
+              <option value="iOS">iOS</option>
+              <option value="Web">Web</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Birim Tipi *</label>
+            <select name="unitType" class="form-control" required>
+              <option value="Banner">Banner (320x50)</option>
+              <option value="Geçiş (Interstitial)">Geçiş (Interstitial)</option>
+              <option value="Ödüllü (Rewarded)">Ödüllü (Rewarded Video)</option>
+              <option value="Açılış (App Open)">Açılış (App Open)</option>
+              <option value="Yerel İleri (Native)">Yerel İleri (Native)</option>
+              <option value="App ID">App ID (Uygulama Kimliği)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Reklam Birimi Kimliği (Ad Unit ID) *</label>
+          <input 
+            type="text" 
+            name="adUnitId" 
+            class="form-control" 
+            placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy" 
+            required 
+            style="font-family: var(--font-mono);" 
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Durum</label>
+            <select name="status" class="form-control">
+              <option value="active">Aktif</option>
+              <option value="paused">Duraklatıldı</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 26px;">
+            <input type="checkbox" id="check-testmode" name="testMode" style="width: 16px; height: 16px; cursor: pointer;" />
+            <label for="check-testmode" style="font-size: 0.86rem; cursor: pointer; color: #cbd5e1; user-select: none;">Test Modu Kimliği</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Yerleşim &amp; Notlar</label>
+          <input type="text" name="notes" class="form-control" placeholder="Örn: Ezan vakti alt banner (320x50)" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;">
+          <button type="button" class="btn btn-secondary modal-close-trigger">İptal</button>
+          <button type="submit" class="btn btn-primary">Kasaya Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: ADD NEW BLOG POST (STRICT OVERLAY)
+       ========================================== -->
+  <div id="modal-add-blog" class="modal-overlay">
+    <div class="admin-modal-card" style="max-width: 680px;">
+      <div class="admin-modal-title">
+        <span>Yeni Blog Makalesi Yayınla</span>
+        <button type="button" class="modal-close-btn modal-close-trigger" title="Kapat">
+          <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="form-add-blog">
+        <div class="form-group">
+          <label class="form-label">Makale Başlığı *</label>
+          <input type="text" name="title" class="form-control" placeholder="Örn: Mümin Pusulası Sensör Mimarisi" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">URL Slug</label>
+            <input type="text" name="slug" class="form-control" placeholder="mumin-pusulasi-sensor-mimarisi" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kategori *</label>
+            <select name="category" class="form-control" required>
+              <option value="Mobil Geliştirme">Mobil Geliştirme</option>
+              <option value="SaaS &amp; Mimari">SaaS &amp; Mimari</option>
+              <option value="Üretkenlik &amp; Biletleme">Üretkenlik &amp; Biletleme</option>
+              <option value="Rehberler &amp; Strateji">Rehberler &amp; Strateji</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Yazar Adı</label>
+            <input type="text" name="author" class="form-control" value="KeskinDev Ekibi" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Okuma Süresi</label>
+            <input type="text" name="readTime" class="form-control" value="5 dk okuma" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Etiketler (Virgülle ayırın)</label>
+          <input type="text" name="tags" class="form-control" placeholder="Flutter, Kotlin, AdMob, Sensörler" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Kısa Özet *</label>
+          <textarea name="summary" class="form-control" rows="2" placeholder="Makale kartında görünecek 1-2 cümlelik teknik özet..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Makale İçeriği (Markdown) *</label>
+          <textarea name="content" class="form-control" rows="8" placeholder="### Alt Başlık&#10;Paragraf metni...&#10;- Madde 1&#10;- Madde 2" required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px;">
+          <button type="button" class="btn btn-secondary modal-close-trigger">İptal</button>
+          <button type="submit" class="btn btn-primary">Makaleyi Yayınla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="admin-toast-container"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

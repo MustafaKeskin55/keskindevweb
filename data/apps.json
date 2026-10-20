@@ -1,0 +1,109 @@
+[
+  {
+    "id": "mumin-pusulasi",
+    "name": "Mümin Pusulası",
+    "slug": "mumin-pusulasi",
+    "tagline": "Ezan Vakitleri, Kıble Pusulası & 8 Masaüstü Widget'ı",
+    "category": "Mobil Uygulama",
+    "platforms": [
+      "Android",
+      "iOS"
+    ],
+    "status": "Yayında",
+    "shortDescription": "Diyanet uyumlu milisaniyelik ezan vakitleri, manyetik sensör destekli Kıble pusulası ve 8 adet özelleştirilebilir masaüstü widget'ı sunan kapsamlı İslami mobil asistan.",
+    "fullDescription": "Mümin Pusulası; Diyanet İşleri Başkanlığı takvimi ile tam uyumlu vakit hesaplama motoru, internetsiz çalışma desteği, kilit ekranı ve masaüstü widget'ları, zikirmatik ve kaza namazı takip modülleri içeren modern mobil uygulamadır.",
+    "features": [
+      "Diyanet uyumlu 81 il ve tüm dünya ilçeleri için vakit hesabı",
+      "Manyetik sensör filtreleme ile sapmasız Kıble pusulası",
+      "8 farklı boyutta özelleştirilebilir masaüstü ve kilit ekranı widget'ı",
+      "Vakit öncesi ve anı için özelleştirilebilir ezan bildirimleri",
+      "Günün Ayeti, Hadis-i Şerifler ve Günlük Dualar kütüphanesi",
+      "Hafızalı Dijital Zikirmatik & Kaza Namazı takipçisi"
+    ],
+    "techStack": [
+      "Flutter",
+      "Kotlin",
+      "Swift",
+      "SQLite"
+    ],
+    "links": {
+      "playStore": "https://play.google.com/store/apps/details?id=com.muminpusulasi.app",
+      "appStore": "",
+      "webDemo": ""
+    },
+    "isActive": true,
+    "updatedAt": "2026-10-20T12:00:00.000Z"
+  },
+  {
+    "id": "site-yonetimi",
+    "name": "Site Yönetimi",
+    "slug": "site-yonetimi",
+    "tagline": "Dijital Apartman, Rezidans ve Site Yönetim Otomasyonu",
+    "category": "Yönetim Yazılımı",
+    "platforms": [
+      "Web",
+      "Android",
+      "iOS"
+    ],
+    "status": "Geliştirildi / Aktif",
+    "shortDescription": "Apartman ve site yöneticileri ile kat sakinlerini buluşturan bulut tabanlı modern yönetim sistemi. Aidat, online ödeme, kasa ve arıza takip platformu.",
+    "fullDescription": "Site Yönetimi; toplu konut ve rezidansların finansal, operasyonel ve idari süreçlerini tek çatı altında toplayan web ve mobil yönetim çözümüdür.",
+    "features": [
+      "Otomatik aidat tahakkuku ve gecikme faizi hesaplama",
+      "Sanal POS ile kredi kartı veya havale ile tahsilat entegrasyonu",
+      "Kasa defteri, gelir-gider ve şeffaf bilanço raporları",
+      "Sakin arıza ve talep bildirim takip akışı",
+      "SMS ve e-posta ile toplu duyuru altyapısı",
+      "Karar defteri ve genel kurul dijital arşivi"
+    ],
+    "techStack": [
+      "Node.js",
+      "React",
+      "Flutter",
+      "PostgreSQL"
+    ],
+    "links": {
+      "playStore": "",
+      "appStore": "",
+      "webDemo": ""
+    },
+    "isActive": true,
+    "updatedAt": "2026-10-20T12:00:00.000Z"
+  },
+  {
+    "id": "ticko",
+    "name": "Ticko",
+    "slug": "ticko",
+    "tagline": "Çevik Görev, Biletleme (Ticket) & Ekip Üretkenlik Platformu",
+    "category": "Üretkenlik & Biletleme",
+    "platforms": [
+      "Web",
+      "Masaüstü",
+      "Mobil"
+    ],
+    "status": "Geliştirildi / Aktif",
+    "shortDescription": "Geliştirici ekipleri ve işletmeler için tasarlanmış minimalist iş ve destek biletleme (ticket) yönetim aracı. Kanban panoları, görev atama ve iş akışı takibi.",
+    "fullDescription": "Ticko; modern çalışma ekiplerinin görevlerini, müşteri destek biletlerini ve sprint süreçlerini karmaşadan uzak şekilde yönetmesini sağlayan çevik yazılım aracıdır.",
+    "features": [
+      "Kanban ve liste tabanlı görev ve sprint panoları",
+      "Müşteri ve dahili destek biletleme altyapısı",
+      "Görev önceliklendirme ve otomatik SLA atamaları",
+      "Zaman ve iş eforu takip kayıtları",
+      "Webhook ve REST API entegrasyonu",
+      "Klavye kısayolları ve odaklanma modu"
+    ],
+    "techStack": [
+      "TypeScript",
+      "Next.js",
+      "Node.js",
+      "PostgreSQL"
+    ],
+    "links": {
+      "playStore": "",
+      "appStore": "",
+      "webDemo": ""
+    },
+    "isActive": true,
+    "updatedAt": "2026-10-20T12:00:00.000Z"
+  }
+]
