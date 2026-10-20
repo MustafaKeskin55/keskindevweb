@@ -1,11 +1,16 @@
-﻿{
+{
   "name": "keskindev",
   "version": "1.0.0",
   "description": "KeskinDev Corporate Platform - Mümin Pusulası, Site Yönetimi, Ticko & Enterprise Solutions",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "dev:cf": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:d1:init": "wrangler d1 execute keskindev --remote --file=./database/keskindev_full.sql",
+    "db:d1:status": "wrangler d1 execute keskindev --remote --command \"SELECT count(*) as apps FROM apps; SELECT count(*) as blogs FROM blogs;\"",
+    "db:pull": "node scripts/sync-d1.js"
   },
   "keywords": [
     "keskindev",
@@ -19,5 +24,8 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.3"
   }
 }

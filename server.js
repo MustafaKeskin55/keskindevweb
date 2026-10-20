@@ -91,11 +91,124 @@ app.get('/api/public/stats', (req, res) => {
         platformCount: platformSet.size || 4,
         platforms: Array.from(platformSet),
         techList: Array.from(techSet),
-        systemStatus: 'Aktif & Canlı'
+        systemStatus: 'Cloudflare D1 Uyumlu & Canlı'
       }
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Public Apps
+app.get('/api/public/apps', (req, res) => {
+  try {
+    const rows = db.query('SELECT * FROM apps WHERE is_active = 1 ORDER BY created_at ASC');
+    res.json({ success: true, data: rows.map(formatAppRow) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Public Blogs
+app.get('/api/public/blogs', (req, res) => {
+  try {
+    const rows = db.query('SELECT * FROM blogs ORDER BY published_at DESC');
+    res.json({ success: true, data: rows.map(formatBlogRow) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Public Single Blog
+app.get('/api/public/blogs/:slug', (req, res) => {
+  try {
+    const row = db.get('SELECT * FROM blogs WHERE slug = ?', [req.params.slug]);
+    if (!row) return res.status(404).json({ success: false, error: 'Yazı bulunamadı.' });
+    res.json({ success: true, data: formatBlogRow(row) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5. Public Settings
+app.get('/api/public/settings', (req, res) => {
+  try {
+    const rows = db.query('SELECT key, value FROM settings');
+    const map = {};
+    rows.forEach(r => { map[r.key] = r.value; });
+
+    res.json({
+      success: true,
+      data: {
+        companyName: map.company_name || 'KeskinDev',
+        legalName: map.company_name || 'KeskinDev',
+        slogan: map.slogan || 'Yarının Teknolojisini Bugün İnşa Ediyoruz',
+        description: map.description || 'Modern mobil, SaaS ve kurumsal yazılımlar geliştiren yenilikçi teknoloji kuruluşu.',
+        contact: {
+          email: map.contact_email || 'iletisim@keskindev.com'
+        },
+        geo: {
+          region: map.geo_region || 'TR-38',
+          placename: map.geo_placename || 'Kayseri, Türkiye',
+          latitude: parseFloat(map.geo_latitude) || 38.7205,
+          longitude: parseFloat(map.geo_longitude) || 35.4826
+        },
+        seo: {
+          title: map.seo_title || 'KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri',
+          metaKeywords: map.seo_keywords || 'keskindev, mümin pusulası, site yönetimi, ticko'
+        }
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 6. Public Contact Form
+app.post('/api/public/contact', (req, res) => {
+  const { name, email, phone, subject, message } = req.body;
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'Lütfen zorunlu alanları (Ad, E-posta, Mesaj) doldurunuz.' });
+  }
+
+  const id = 'msg-' + Date.now();
+  const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
+
+  try {
+    db.run(`
+      INSERT INTO messages (id, name, email, phone, subject, message, status, ip_address)
+      VALUES (?, ?, ?, ?, ?, ?, 'new', ?)
+    `, [id, name, email, phone || '', subject || '', message, clientIp]);
+
+    res.status(201).json({ success: true, message: 'Mesajınız başarıyla iletildi. En kısa sürede geri dönüş yapılacaktır.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Mesaj gönderilemedi: ' + err.message });
+  }
+});
+
+// ==========================================
+// ADMIN AUTHENTICATION ROUTES
+// ==========================================
+
+app.post('/api/admin/auth/login', (req, res) => {
+  const { passcode } = req.body;
+  if (!passcode) {
+    return res.status(400).json({ error: 'Lütfen PIN kodunuzu girin.' });
+  }
+
+  try {
+    const passRow = db.get("SELECT value FROM settings WHERE key = 'admin_passcode'");
+    const validPass = passRow?.value || 'keskin2026';
+
+    if (passcode.trim() === validPass.trim()) {
+      const token = 'kd_admin_' + crypto.randomBytes(24).toString('hex');
+      activeSessions.add(token);
+      res.json({ success: true, message: 'Giriş başarılı.', token });
+    } else {
+      res.status(401).json({ error: 'Hatalı yönetici şifresi!' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Giriş yapılamadı: ' + err.message });
   }
 });
 

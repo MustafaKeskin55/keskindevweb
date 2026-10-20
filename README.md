@@ -1,4 +1,4 @@
-﻿# 🚀 KeskinDev - Kurumsal Yazılım, Teknoloji & Blog Platformu
+# 🚀 KeskinDev - Kurumsal Yazılım, Teknoloji & Blog Platformu
 
 **KeskinDev**, *Mümin Pusulası*, *Site Yönetimi* ve *Ticko* gibi on binlerce aktif kullanıcıya ulaşan yüksek performanslı mobil uygulamalar, SaaS ve kurumsal yazılımlar geliştiren yenilikçi teknoloji şirketinin resmi web platformudur.
 
@@ -13,13 +13,17 @@
    - %100 Duyarlı (Mobil, Tablet, Masaüstü uyumlu).
 
 2. **Dinamik Ürün Ekosistemi**:
-   - Statik sabit kod içermez. Tüm ürünler (`apps.json`) API üzerinden dinamik yüklenir:
+   - Statik sabit kod veya JSON içermez. Tüm ürünler ve sistem verileri Cloudflare D1 SQL veritabanı üzerinden dinamik yüklenir:
      - 🧭 **Mümin Pusulası**: Ezan Vakitleri, Manyetik Kıble Pusulası & 8 Masaüstü Widget'ı.
      - 🏢 **Site Yönetimi**: Dijital Apartman, Rezidans ve Site Yönetim Otomasyonu, Aidat & Kasa Takibi.
      - ⚡ **Ticko**: Çevik Görev, Biletleme (Ticket) & Ekip Üretkenlik Platformu.
      - ⚙️ **KeskinDev Enterprise Suite**: Özel bulut ve mobil mimariler.
 
-3. **Gelişmiş SEO & Coğrafi (GEO) Optimizasyon**:
+3. **Cloudflare D1 SQL Altyapısı**:
+   - **Database ID**: `b4c9d5f7-c90e-4c2d-b1f0-577377bdaa56` (`keskindev`)
+   - Tüm ürünler (`apps`), blog makaleleri (`blogs`), reklam kimlikleri (`ad_keys`), iletişim mesajları (`messages`) ve sistem ayarları (`settings`) Cloudflare D1 üzerinde barındırılır.
+
+4. **Gelişmiş SEO & Coğrafi (GEO) Optimizasyon**:
    - JSON-LD Structured Data: `Organization`, `WebSite`, `SoftwareApplication` (Mümin Pusulası, Site Yönetimi, Ticko), `LocalBusiness`, `BlogPosting`.
    - Coğrafi Meta Etiketleri:
      - `geo.region`: `TR-38`
@@ -28,13 +32,13 @@
      - `ICBM`: `38.7205, 35.4826`
    - Otomatik `robots.txt` ve `sitemap.xml`.
 
-4. **Entegre Blog Portalı (`/blog`)**:
+5. **Entegre Blog Portalı (`/blog`)**:
    - Anlık arama (canlı filtreleme).
    - Kategori filtreleme: *Tümü*, *Mobil Geliştirme*, *SaaS & Mimari*, *Üretkenlik*, *Rehberler & ASO*.
    - Öne çıkan makale kartı.
    - İnteraktif modal okuyucu (Markdown formatlı teknik makaleler, okuma süreleri, etiketler).
 
-5. **Güvenli Yönetim Paneli (`/admin`)**:
+6. **Güvenli Yönetim Paneli (`/admin`)**:
    - Master PIN koruması (Varsayılan şifre: `keskin2026`).
    - Canlı İstatistikler: Toplam uygulamalar, blog yazıları, kayıtlı reklam kimlikleri, okunmamış gelen mesajlar.
    - **🔒 Reklam Kimlikleri Kasası (Ad Keys Vault - ÖZEL ALAN)**:
@@ -50,19 +54,33 @@
 ## 📁 Proje Dizin Yapısı
 
 ```
-C:\KeskinDev\
-├── server.js               # Express API backend sunucusu
-├── package.json            # Bağımlılıklar ve scriptler
-├── README.md               # Proje dökümantasyonu
-├── data/                   # JSON tabanlı dinamik veritabanı
-│   ├── apps.json           # Halka açık ürün ve uygulama verileri
-│   ├── ad_keys.json        # 🔒 GİZLİ reklam kimlikleri kasası
-│   ├── blogs.json          # Blog makaleleri ve içerikleri
-│   ├── messages.json       # Ziyaretçi iletişim ve teklif talepleri
-│   └── settings.json       # Firma, SEO, GEO ve güvenlik ayarları
+c:\keskindevweb\
+├── wrangler.toml           # Cloudflare Workers & D1 veritabanı yapılandırması
+├── worker.js               # Cloudflare Edge Worker & D1 API motoru
+├── server.js               # Yerel Express geliştirme API sunucusu
+├── package.json            # Bağımlılıklar, D1 ve dağıtım scriptleri
+├── database/               # SQL Şema & Tohum dosyaları
+│   ├── keskindev_full.sql  # D1 tam şema ve canlı veri tohumu
+│   ├── schema.sql          # ANSI SQL Tablo tanımları
+│   └── seeds.sql           # İlk canlı kayıtlar
 └── public/                 # İstemci tarafı web arayüzü
     ├── index.html          # Ana kurumsal web sitesi
     ├── blog.html           # Blog portalı
+    ├── admin.html          # Yönetim paneli & Reklam kasası
+    ├── robots.txt          # Arama motoru robot direktifleri
+    ├── sitemap.xml         # Site haritası
+    ├── assets/
+    │   ├── logo.svg        # KeskinDev vektörel logo
+    │   └── favicon.svg     # Modern sekme simgesi
+    ├── css/
+    │   ├── main.css        # Genel stil ve tema sistemi
+    │   ├── blog.css        # Blog ve okuyucu stilleri
+    │   └── admin.css       # Yönetim paneli ve kasa stilleri
+    └── js/
+        ├── main.js         # Ana sayfa dinamik yükleyicisi ve partikül canvas
+        ├── blog.js         # Blog arama, filtre ve modal okuyucu
+        └── admin.js        # Yönetici oturumu, reklam kasası CRUD ve ayarlar
+```
     ├── admin.html          # Yönetim paneli & Reklam kasası
     ├── robots.txt          # Arama motoru robot direktifleri
     ├── sitemap.xml         # Site haritası
