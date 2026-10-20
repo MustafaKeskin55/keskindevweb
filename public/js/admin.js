@@ -522,7 +522,7 @@ async function loadServices() {
       <div class="admin-app-card">
         <div class="admin-app-header">
           <h4 class="admin-app-title">${s.title}</h4>
-          <span class="badge-status active">${s.icon || 'Hizmet'}</span>
+          <span class="badge-service-tag">${s.icon || 'Hizmet'}</span>
         </div>
         <p class="admin-app-desc">${s.desc}</p>
         <div class="card-actions-bar">
@@ -954,7 +954,7 @@ async function loadMessages() {
     if (currentMessages.length === 0) {
       container.innerHTML = `
         <div class="admin-table-card" style="padding: 48px; text-align: center;">
-          <div class="empty-icon-wrap" style="margin: 0 auto 12px auto;">
+          <div class="empty-icon-wrap">
             <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
             </svg>
@@ -969,20 +969,20 @@ async function loadMessages() {
     }
 
     container.innerHTML = currentMessages.map(m => `
-      <div class="admin-table-card" style="padding: 22px; margin-bottom: 14px; border-left: 3px solid ${m.status === 'new' ? 'var(--accent-blue)' : 'var(--admin-card-border)'};">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+      <div class="admin-message-card ${m.status === 'new' ? 'status-new' : ''}">
+        <div class="message-card-header">
           <div>
-            <h4 style="font-size: 1.05rem; margin: 0 0 4px 0; color: #ffffff;">${m.name} <span style="font-size: 0.82rem; font-weight: normal; color: var(--text-muted);">(${m.email} / ${m.phone || 'Tel yok'})</span></h4>
-            <div style="font-size: 0.84rem; color: var(--accent-blue); font-weight: 600;">Konu: ${m.subject || 'Genel İletişim'}</div>
+            <h4 class="message-sender-name">${m.name} <span class="message-sender-info">(${m.email} / ${m.phone || 'Tel yok'})</span></h4>
+            <div class="message-subject-badge">Konu: ${m.subject || 'Genel İletişim'}</div>
           </div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+          <div class="message-date-text">
             ${new Date(m.created_at || m.date || Date.now()).toLocaleString('tr-TR')}
           </div>
         </div>
-        <p style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 8px; margin: 0 0 14px 0;">
+        <p class="message-body-box">
           ${m.message}
         </p>
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <div class="message-actions-bar">
           ${m.status === 'new' ? `<button class="btn btn-secondary" style="font-size: 0.78rem;" onclick="markMessageRead('${m.id}')">Okundu İşaretle</button>` : ''}
           <button class="btn btn-danger" style="font-size: 0.78rem;" onclick="deleteMessage('${m.id}')">Sil</button>
         </div>

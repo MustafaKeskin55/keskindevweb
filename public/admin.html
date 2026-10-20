@@ -251,18 +251,18 @@
               İçeriklerinizi tek tıkla doğrudan Cloudflare D1 veritabanı üzerinden düzenleyin.
             </p>
 
-            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+            <div class="admin-quick-actions">
               <button class="btn btn-primary" onclick="openAppModal()">
-                <span>+ Yeni Uygulama Ekle</span>
+                <span>Yeni Uygulama Ekle</span>
               </button>
               <button class="btn btn-secondary" onclick="openBlogModal()">
-                <span>+ Yeni Blog Yaz</span>
+                <span>Yeni Blog Yaz</span>
               </button>
               <button class="btn btn-secondary" onclick="openServiceModal()">
-                <span>+ Yeni Hizmet Ekle</span>
+                <span>Yeni Hizmet Ekle</span>
               </button>
               <button class="btn btn-secondary" onclick="openAdKeyModal()">
-                <span>+ Reklam Kimliği Ekle</span>
+                <span>Reklam Kimliği Ekle</span>
               </button>
               <button class="btn btn-secondary" onclick="switchToTab('hero')">
                 <span>Hero &amp; Slogan Düzenle</span>
@@ -292,12 +292,12 @@
                 <input type="text" name="hero_badge" id="hero-inp-badge" class="form-control" placeholder="Örn: Yazılım &amp; Dijital Ürün Stüdyosu" />
               </div>
 
-              <div class="form-row">
-                <div class="form-group" style="flex: 2;">
+              <div class="form-row grid-2-1">
+                <div class="form-group">
                   <label class="form-label">Ana Başlık (Title)</label>
                   <input type="text" name="hero_title" id="hero-inp-title" class="form-control" placeholder="Geleceğe yön veren, güvenilir ve..." required />
                 </div>
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group">
                   <label class="form-label">Vurgulu Renkli Metin</label>
                   <input type="text" name="hero_title_highlight" id="hero-inp-highlight" class="form-control" placeholder="yüksek performanslı" />
                 </div>
@@ -336,19 +336,19 @@
 
               <!-- Live Preview Container -->
               <div class="live-preview-box">
-                <div style="font-size: 0.76rem; color: #93c5fd; font-weight: 700; text-transform: uppercase; margin-bottom: 12px;">CANLI ÖNİZLEME</div>
-                <div style="font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 99px; color: #93c5fd; margin-bottom: 12px;" id="prev-badge">
+                <div class="preview-badge-label">CANLI ÖNİZLEME</div>
+                <div class="preview-pill" id="prev-badge">
                   Yazılım &amp; Dijital Ürün Stüdyosu
                 </div>
-                <div style="font-size: 1.6rem; font-weight: 800; color: #ffffff; line-height: 1.3; margin-bottom: 10px;" id="prev-title">
-                  Geleceğe yön veren, güvenilir ve <span style="background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">yüksek performanslı</span> yazılımlar
+                <div class="preview-hero-title" id="prev-title">
+                  Geleceğe yön veren, güvenilir ve <span class="highlight-text">yüksek performanslı</span> yazılımlar
                 </div>
-                <div style="font-size: 0.9rem; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;" id="prev-subtitle">
+                <div class="preview-hero-subtitle" id="prev-subtitle">
                   Yenilikçi mobil uygulamalar, SaaS ve kurumsal yönetim yazılımları geliştiriyoruz.
                 </div>
-                <div style="display: flex; gap: 10px;">
-                  <span class="btn btn-primary" style="pointer-events: none; padding: 8px 16px; font-size: 0.82rem;" id="prev-btn1">Ürünleri İncele</span>
-                  <span class="btn btn-secondary" style="pointer-events: none; padding: 8px 16px; font-size: 0.82rem;" id="prev-btn2">Mühendislik Notları</span>
+                <div class="preview-btn-row">
+                  <span class="btn btn-primary preview-btn" id="prev-btn1">Ürünleri İncele</span>
+                  <span class="btn btn-secondary preview-btn" id="prev-btn2">Mühendislik Notları</span>
                 </div>
               </div>
 
@@ -459,8 +459,8 @@
                 <div class="img-preview-card">
                   <img id="prev-logo-img" class="img-preview-thumb" src="/assets/logo.svg" alt="Logo Önizleme" />
                   <div>
-                    <strong style="color: #ffffff; font-size: 0.88rem;">Ana Web Sitesi Logosu</strong>
-                    <div style="color: var(--text-muted); font-size: 0.78rem;">Header ve footer alanlarında görünür.</div>
+                    <strong class="img-preview-name">Ana Web Sitesi Logosu</strong>
+                    <div class="img-preview-sub">Header ve footer alanlarında görünür.</div>
                   </div>
                 </div>
               </div>
@@ -471,8 +471,8 @@
                 <div class="img-preview-card">
                   <img id="prev-favicon-img" class="img-preview-thumb" style="width: 40px; height: 40px;" src="/assets/favicon.svg" alt="Favicon Önizleme" />
                   <div>
-                    <strong style="color: #ffffff; font-size: 0.88rem;">Tarayıcı Sekme Simgesi</strong>
-                    <div style="color: var(--text-muted); font-size: 0.78rem;">Tarayıcı sekmesinde görüntülenir.</div>
+                    <strong class="img-preview-name">Tarayıcı Sekme Simgesi</strong>
+                    <div class="img-preview-sub">Tarayıcı sekmesinde görüntülenir.</div>
                   </div>
                 </div>
               </div>
@@ -483,8 +483,8 @@
                 <div class="img-preview-card">
                   <img id="prev-og-img" class="img-preview-thumb" src="/assets/logo.svg" alt="OG Önizleme" />
                   <div>
-                    <strong style="color: #ffffff; font-size: 0.88rem;">Sosyal Medya Önizleme Görseli</strong>
-                    <div style="color: var(--text-muted); font-size: 0.78rem;">WhatsApp, Twitter ve LinkedIn paylaşımlarında çıkar.</div>
+                    <strong class="img-preview-name">Sosyal Medya Önizleme Görseli</strong>
+                    <div class="img-preview-sub">WhatsApp, Twitter ve LinkedIn paylaşımlarında çıkar.</div>
                   </div>
                 </div>
               </div>
@@ -521,13 +521,13 @@
 
           <div class="admin-table-card">
             <div class="admin-table-toolbar">
-              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <label style="font-size: 0.84rem; color: var(--text-muted); font-weight: 600;">Uygulama:</label>
+              <div class="toolbar-filters">
+                <label class="toolbar-label">Uygulama:</label>
                 <select id="filter-ad-app" class="filter-select">
                   <option value="all">Tümü (Hepsi)</option>
                 </select>
 
-                <label style="font-size: 0.84rem; color: var(--text-muted); font-weight: 600; margin-left: 12px;">Platform:</label>
+                <label class="toolbar-label" style="margin-left: 8px;">Platform:</label>
                 <select id="filter-ad-platform" class="filter-select">
                   <option value="all">Tümü</option>
                   <option value="android">Android</option>
@@ -536,7 +536,7 @@
                 </select>
               </div>
 
-              <div style="font-size: 0.82rem; color: var(--text-muted);">
+              <div class="toolbar-hint">
                 Kimliğin yanındaki simgeye tıklayarak tek tıkla kopyalayabilirsiniz.
               </div>
             </div>
@@ -683,7 +683,7 @@
               <div class="form-group">
                 <label class="form-label">SEO Meta Açıklama (Description) *</label>
                 <textarea name="metaDescription" class="form-control" rows="2" placeholder="Google arama sonuçlarında görünen 150-160 karakterlik site tanıtım açıklaması..." required></textarea>
-                <small style="color: var(--text-muted); font-size: 0.78rem;">Google ve arama motorları için 140 - 160 karakter arası önerilir.</small>
+                <small class="form-hint">Google ve arama motorları için 140 - 160 karakter arası önerilir.</small>
               </div>
 
               <div class="form-group">

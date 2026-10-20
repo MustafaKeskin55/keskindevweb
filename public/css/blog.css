@@ -328,3 +328,29 @@
     padding: 24px;
   }
 }
+
+.reader-cta-card {
+  margin-top: 36px;
+  padding: 22px 26px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.reader-cta-title {
+  color: #ffffff;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.reader-cta-desc {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+

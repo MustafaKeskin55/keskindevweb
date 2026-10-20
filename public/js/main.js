@@ -389,7 +389,7 @@ async function loadDynamicApps() {
             <div class="product-meta">
               <span>Platformlar: <strong>${(app.platforms || []).join(', ')}</strong></span>
             </div>
-            <div class="product-links" style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <div class="product-links">
               ${actionButtons.join('')}
             </div>
           </div>
