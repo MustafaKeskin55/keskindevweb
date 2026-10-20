@@ -1,0 +1,17 @@
+name = "keskindev"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Workers / Pages Static Assets
+[assets]
+directory = "./public"
+
+# Cloudflare D1 Veritabanı Bağlantısı (Dynamic SQL Engine)
+[[d1_databases]]
+binding = "DB"
+database_name = "keskindev"
+database_id = "b4c9d5f7-c90e-4c2d-b1f0-577377bdaa56"
+
+[vars]
+ADMIN_PASSCODE_DEFAULT = "keskin2026"
