@@ -185,6 +185,7 @@ app.get('/api/public/settings', (req, res) => {
         },
         seo: {
           title: map.seo_title || 'KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri',
+          description: map.seo_description || 'KeskinDev; Mümin Pusulası, Site Yönetimi ve Ticko gibi mobil uygulamalar, SaaS ve kurumsal yazılımlar geliştiren teknoloji kuruluşu.',
           metaKeywords: map.seo_keywords || 'keskindev, mümin pusulası, site yönetimi, ticko'
         },
         footer: {
@@ -572,6 +573,7 @@ app.get('/api/admin/settings', requireAdmin, (req, res) => {
         },
         seo: {
           title: map.seo_title || '',
+          description: map.seo_description || '',
           metaKeywords: map.seo_keywords || ''
         },
         footer: {

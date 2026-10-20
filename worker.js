@@ -201,6 +201,7 @@ export default {
             },
             seo: {
               title: map.seo_title || 'KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri',
+              description: map.seo_description || 'KeskinDev; Mümin Pusulası, Site Yönetimi ve Ticko gibi mobil uygulamalar, SaaS ve kurumsal yazılımlar geliştiren teknoloji kuruluşu.',
               metaKeywords: map.seo_keywords || 'keskindev, mümin pusulası, site yönetimi, ticko'
             },
             footer: {
@@ -620,6 +621,7 @@ export default {
               },
               seo: {
                 title: map.seo_title || '',
+                description: map.seo_description || '',
                 metaKeywords: map.seo_keywords || ''
               },
               footer: {
@@ -698,10 +700,48 @@ export default {
       if (pathname === '/admin') {
         return env.ASSETS.fetch(new Request(new URL('/admin.html', request.url), request));
       }
-      const assetRes = await env.ASSETS.fetch(request);
+
+      let assetRes = await env.ASSETS.fetch(request);
       if (assetRes.status === 404 && !pathname.startsWith('/api/')) {
-        return env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
+        assetRes = await env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
       }
+
+      // Edge HTML Rewriter for dynamic SEO, GEO & Branding injection on homepage
+      if ((pathname === '/' || pathname === '/index.html') && assetRes.status === 200 && env.DB) {
+        try {
+          const { results } = await env.DB.prepare("SELECT key, value FROM settings WHERE key LIKE 'seo_%' OR key LIKE 'geo_%'").all();
+          const sMap = {};
+          (results || []).forEach(r => { sMap[r.key] = r.value; });
+
+          const dynamicTitle = sMap.seo_title || 'KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri';
+          const dynamicDesc = sMap.seo_description || 'KeskinDev; Mümin Pusulası, Site Yönetimi ve Ticko gibi mobil uygulamalar, SaaS ve kurumsal yazılımlar geliştiren teknoloji kuruluşu.';
+          const dynamicKeywords = sMap.seo_keywords || 'keskindev, keskin dev, mümin pusulası, mumin pusulasi, site yönetimi yazılımı, ticko biletleme, mobil uygulama geliştirme, kayseri yazılım, flutter türkiye, saas';
+          const dynamicGeoRegion = sMap.geo_region || 'TR-38';
+          const dynamicGeoPlace = sMap.geo_placename || 'Kayseri, Türkiye';
+          const dynamicLat = sMap.geo_latitude || '38.7205';
+          const dynamicLng = sMap.geo_longitude || '35.4826';
+          const dynamicGeoPos = `${dynamicLat};${dynamicLng}`;
+          const dynamicICBM = `${dynamicLat}, ${dynamicLng}`;
+
+          return new HTMLRewriter()
+            .on('title', { element(e) { e.setInnerContent(dynamicTitle); } })
+            .on('meta[name="title"]', { element(e) { e.setAttribute('content', dynamicTitle); } })
+            .on('meta[name="description"]', { element(e) { e.setAttribute('content', dynamicDesc); } })
+            .on('meta[name="keywords"]', { element(e) { e.setAttribute('content', dynamicKeywords); } })
+            .on('meta[property="og:title"]', { element(e) { e.setAttribute('content', dynamicTitle); } })
+            .on('meta[property="og:description"]', { element(e) { e.setAttribute('content', dynamicDesc); } })
+            .on('meta[property="twitter:title"]', { element(e) { e.setAttribute('content', dynamicTitle); } })
+            .on('meta[property="twitter:description"]', { element(e) { e.setAttribute('content', dynamicDesc); } })
+            .on('meta[name="geo.region"]', { element(e) { e.setAttribute('content', dynamicGeoRegion); } })
+            .on('meta[name="geo.placename"]', { element(e) { e.setAttribute('content', dynamicGeoPlace); } })
+            .on('meta[name="geo.position"]', { element(e) { e.setAttribute('content', dynamicGeoPos); } })
+            .on('meta[name="ICBM"]', { element(e) { e.setAttribute('content', dynamicICBM); } })
+            .transform(assetRes);
+        } catch (_) {
+          return assetRes;
+        }
+      }
+
       return assetRes;
     }
 

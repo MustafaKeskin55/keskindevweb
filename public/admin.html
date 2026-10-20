@@ -676,13 +676,19 @@
               </h4>
 
               <div class="form-group">
-                <label class="form-label">SEO Meta Başlık (Title)</label>
-                <input type="text" name="metaTitle" class="form-control" required />
+                <label class="form-label">SEO Meta Başlık (Title) *</label>
+                <input type="text" name="metaTitle" class="form-control" placeholder="Örn: KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">SEO Meta Açıklama (Description) *</label>
+                <textarea name="metaDescription" class="form-control" rows="2" placeholder="Google arama sonuçlarında görünen 150-160 karakterlik site tanıtım açıklaması..." required></textarea>
+                <small style="color: var(--text-muted); font-size: 0.78rem;">Google ve arama motorları için 140 - 160 karakter arası önerilir.</small>
               </div>
 
               <div class="form-group">
                 <label class="form-label">SEO Anahtar Kelimeler (Virgülle ayrılmış)</label>
-                <textarea name="metaKeywords" class="form-control" rows="2"></textarea>
+                <textarea name="metaKeywords" class="form-control" rows="2" placeholder="keskindev, mobil uygulama, flutter, saas, kayseri yazılım"></textarea>
               </div>
 
               <div class="form-group">

@@ -87,9 +87,65 @@ async function loadDynamicSettings() {
       renderDynamicServices(s.services);
     }
 
-    // Footer & Contact Data
+    // ==========================================
+    // Dynamic SEO, Title & Meta Tags
+    // ==========================================
+    if (s.seo?.title) {
+      document.title = s.seo.title;
+      const metaTitle = document.querySelector('meta[name="title"]');
+      if (metaTitle) metaTitle.setAttribute('content', s.seo.title);
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', s.seo.title);
+      const twTitle = document.querySelector('meta[property="twitter:title"]');
+      if (twTitle) twTitle.setAttribute('content', s.seo.title);
+    }
+
+    const dynamicDesc = s.seo?.description || s.seo?.metaDescription;
+    if (dynamicDesc) {
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', dynamicDesc);
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute('content', dynamicDesc);
+      const twDesc = document.querySelector('meta[property="twitter:description"]');
+      if (twDesc) twDesc.setAttribute('content', dynamicDesc);
+    }
+
+    if (s.seo?.metaKeywords) {
+      const metaKw = document.querySelector('meta[name="keywords"]');
+      if (metaKw) metaKw.setAttribute('content', s.seo.metaKeywords);
+    }
+
+    // ==========================================
+    // Dynamic GEO Meta Tags
+    // ==========================================
+    if (s.geo?.region) {
+      const metaRegion = document.querySelector('meta[name="geo.region"]');
+      if (metaRegion) metaRegion.setAttribute('content', s.geo.region);
+    }
+
+    if (s.geo?.placename) {
+      const metaPlace = document.querySelector('meta[name="geo.placename"]');
+      if (metaPlace) metaPlace.setAttribute('content', s.geo.placename);
+    }
+
+    if (s.geo?.latitude && s.geo?.longitude) {
+      const pos = `${s.geo.latitude};${s.geo.longitude}`;
+      const icbm = `${s.geo.latitude}, ${s.geo.longitude}`;
+      const metaPos = document.querySelector('meta[name="geo.position"]');
+      if (metaPos) metaPos.setAttribute('content', pos);
+      const metaIcbm = document.querySelector('meta[name="ICBM"]');
+      if (metaIcbm) metaIcbm.setAttribute('content', icbm);
+    }
+
+    // ==========================================
+    // Footer, Contact & Location Elements
+    // ==========================================
     const directEmail = document.getElementById('contact-direct-email');
     const footerEmail = document.getElementById('footer-email-link');
+    const directPhone = document.getElementById('contact-direct-phone');
+    const footerPhone = document.getElementById('footer-phone-link');
+    const directAddress = document.getElementById('contact-direct-address');
+    const footerAddress = document.getElementById('footer-address-text');
     const geoBadge = document.getElementById('footer-geo-badge');
     const copyright = document.getElementById('footer-copyright-text');
     const companyDesc = document.getElementById('footer-company-desc');
@@ -102,14 +158,65 @@ async function loadDynamicSettings() {
       footerEmail.textContent = s.contact.email;
       footerEmail.href = 'mailto:' + s.contact.email;
     }
-    if (geoBadge && s.geo?.placename) {
-      geoBadge.textContent = s.geo.placename + ' (' + (s.geo.region || 'TR-38') + ')';
+
+    if (s.contact?.phone) {
+      if (directPhone) {
+        directPhone.textContent = s.contact.phone;
+        directPhone.href = 'tel:' + s.contact.phone.replace(/[^0-9+]/g, '');
+      }
+      if (footerPhone) {
+        footerPhone.textContent = s.contact.phone;
+        footerPhone.href = 'tel:' + s.contact.phone.replace(/[^0-9+]/g, '');
+      }
+    } else {
+      const phoneWrap1 = document.getElementById('contact-phone-wrap');
+      const phoneWrap2 = document.getElementById('footer-phone-wrap');
+      if (phoneWrap1) phoneWrap1.style.display = 'none';
+      if (phoneWrap2) phoneWrap2.style.display = 'none';
     }
+
+    const currentAddress = s.contact?.address || s.geo?.placename;
+    if (currentAddress) {
+      if (directAddress) directAddress.textContent = currentAddress;
+      if (footerAddress) footerAddress.textContent = currentAddress;
+    }
+
+    if (geoBadge) {
+      const place = s.geo?.placename || 'Kayseri';
+      const reg = s.geo?.region || 'TR-38';
+      geoBadge.textContent = `${place} / ${reg} | Türkiye`;
+    }
+
     if (copyright) {
       copyright.innerHTML = s.footer?.copyright || ('&copy; ' + new Date().getFullYear() + ' ' + (s.companyName || 'KeskinDev') + '. Tüm hakları saklıdır.');
     }
     if (companyDesc && s.footer?.desc) {
       companyDesc.textContent = s.footer.desc;
+    }
+
+    // ==========================================
+    // Dynamic Social Links
+    // ==========================================
+    const socialGh = document.getElementById('footer-social-github');
+    const socialPs = document.getElementById('footer-social-playstore');
+    const socialTw = document.getElementById('footer-social-twitter');
+    const socialLi = document.getElementById('footer-social-linkedin');
+
+    if (socialGh) {
+      if (s.social?.github) { socialGh.href = s.social.github; socialGh.style.display = 'inline-flex'; }
+      else socialGh.style.display = 'none';
+    }
+    if (socialPs) {
+      if (s.social?.playStore) { socialPs.href = s.social.playStore; socialPs.style.display = 'inline-flex'; }
+      else socialPs.style.display = 'none';
+    }
+    if (socialTw) {
+      if (s.social?.twitter) { socialTw.href = s.social.twitter; socialTw.style.display = 'inline-flex'; }
+      else socialTw.style.display = 'none';
+    }
+    if (socialLi) {
+      if (s.social?.linkedin) { socialLi.href = s.social.linkedin; socialLi.style.display = 'inline-flex'; }
+      else socialLi.style.display = 'none';
     }
   } catch (e) {
     console.error('Settings load error:', e);

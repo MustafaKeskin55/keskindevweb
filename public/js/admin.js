@@ -1052,6 +1052,7 @@ async function loadSettings() {
     if (form.geoLongitude) form.geoLongitude.value = s.geo?.longitude || '35.4826';
 
     if (form.metaTitle) form.metaTitle.value = s.seo?.title || '';
+    if (form.metaDescription) form.metaDescription.value = s.seo?.description || s.seo?.metaDescription || '';
     if (form.metaKeywords) form.metaKeywords.value = s.seo?.metaKeywords || '';
     if (form.footerDesc) form.footerDesc.value = s.footer?.desc || '';
     if (form.footerCopyright) form.footerCopyright.value = s.footer?.copyright || '';
@@ -1082,6 +1083,7 @@ function initSettingsForm() {
       geo_latitude: form.geoLatitude.value.trim(),
       geo_longitude: form.geoLongitude.value.trim(),
       seo_title: form.metaTitle.value.trim(),
+      seo_description: form.metaDescription ? form.metaDescription.value.trim() : '',
       seo_keywords: form.metaKeywords.value.trim(),
       footer_desc: form.footerDesc.value.trim(),
       footer_copyright: form.footerCopyright.value.trim(),
