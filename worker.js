@@ -42,6 +42,7 @@ function formatBlogRow(row) {
   if (!row) return null;
   return {
     ...row,
+    readTime: row.read_time || '5 dk okuma',
     tags: typeof row.tags === 'string' ? JSON.parse(row.tags || '[]') : (row.tags || []),
     date: row.published_at,
     coverGradient: row.cover_gradient,

@@ -92,7 +92,7 @@ function renderBlogList() {
           <div class="featured-body">
             <div class="blog-card-meta">
               <span>${BlogIcons.calendar} ${feat.date}</span>
-              <span>${BlogIcons.clock} ${feat.readTime}</span>
+              <span>${BlogIcons.clock} ${feat.readTime || feat.read_time || '5 dk okuma'}</span>
               <span>${BlogIcons.user} ${feat.author}</span>
             </div>
             <h2 class="featured-title">${feat.title}</h2>
@@ -133,8 +133,8 @@ function renderBlogList() {
       <div class="blog-card-body">
         <div class="blog-card-meta">
           <span>${BlogIcons.calendar} ${blog.date}</span>
-          <span>${BlogIcons.clock} ${blog.readTime}</span>
-          <span>${BlogIcons.eye} ${blog.views || 0}</span>
+          <span>${BlogIcons.clock} ${blog.readTime || blog.read_time || '5 dk okuma'}</span>
+          <span>${BlogIcons.eye} ${blog.views || 0} okuma</span>
         </div>
         <h4 class="blog-card-title">${blog.title}</h4>
         <p class="blog-card-summary">${blog.summary}</p>

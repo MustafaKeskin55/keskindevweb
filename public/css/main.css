@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   /* Refined, mature dark palette (Linear / Stripe style) */
@@ -591,6 +591,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .product-meta strong {
   color: #e2e8f0;
+}
+
+.product-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
 }
 
 .btn-card-action {

@@ -1,4 +1,4 @@
-/* KeskinDev Admin Console - High-Performance Executive Dashboard */
+/* KeskinDev Admin Console - High-Performance Executive Dashboard & Dynamic CMS */
 
 :root {
   --admin-bg: #07090e;
@@ -34,8 +34,9 @@ body.admin-body {
 }
 
 /* ==========================================
-   LOCK SCREEN (PIN / SIFRE EKRANI)
+   LOCK SCREEN (PIN / SİFRE EKRANI)
    ========================================== */
+.lock-screen-wrapper,
 .lock-screen-wrap {
   position: fixed;
   top: 0;
@@ -48,8 +49,10 @@ body.admin-body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  box-sizing: border-box;
 }
 
+.lock-box,
 .lock-card {
   background: var(--admin-card-bg);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -88,35 +91,29 @@ body.admin-body {
   margin: 0 0 26px 0;
 }
 
-.pin-input {
-  width: 100%;
-  padding: 13px 16px;
-  background: #06080d;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 1.15rem;
-  text-align: center;
-  letter-spacing: 0.2em;
-  font-family: var(--font-mono);
-  outline: none;
-  transition: all 0.2s ease;
-  margin-bottom: 14px;
-}
-
-.pin-input:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+.login-error-msg {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 0.84rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ==========================================
    ADMIN LAYOUT & SIDEBAR
    ========================================== */
+.admin-layout-wrapper,
 .admin-layout {
   display: flex;
   width: 100%;
   min-height: 100vh;
   position: relative;
+  box-sizing: border-box;
 }
 
 .admin-sidebar {
@@ -133,8 +130,6 @@ body.admin-body {
   left: 0;
   bottom: 0;
   z-index: 100;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .sidebar-header {
@@ -157,11 +152,6 @@ body.admin-body {
   font-size: 1.1rem;
 }
 
-.sidebar-logo img {
-  height: 28px;
-  width: auto;
-}
-
 .sidebar-badge {
   font-size: 0.68rem;
   font-weight: 600;
@@ -182,6 +172,8 @@ body.admin-body {
   gap: 4px;
   flex-grow: 1;
   margin: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-tab-btn {
@@ -236,7 +228,7 @@ body.admin-body {
 }
 
 /* ==========================================
-   MAIN CONTENT AREA
+   MAIN CONTENT AREA & TOPBAR
    ========================================== */
 .admin-main {
   margin-left: 260px;
@@ -276,11 +268,13 @@ body.admin-body {
   gap: 12px;
 }
 
+.admin-content-area,
 .admin-content-view {
   padding: 32px;
   flex-grow: 1;
-  max-width: 1400px;
+  max-width: 1440px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .tab-pane {
@@ -354,63 +348,68 @@ body.admin-body {
 }
 
 /* ==========================================
-   METRICS GRID (OVERVIEW)
+   METRICS & STATS GRID (OVERVIEW TAB)
    ========================================== */
+.admin-stats-grid,
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
   margin-bottom: 28px;
 }
 
+.admin-stat-card,
 .metric-card {
   background: var(--admin-card-bg);
   border: 1px solid var(--admin-card-border);
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  border-radius: 12px;
+  padding: 22px;
   transition: all 0.2s ease;
-}
-
-.metric-card:hover {
-  border-color: var(--admin-card-hover);
-  transform: translateY(-2px);
-}
-
-.metric-icon-wrap {
-  width: 46px;
-  height: 46px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--admin-card-border);
-  color: var(--text-main);
-}
-
-.metric-info {
   display: flex;
   flex-direction: column;
 }
 
-.metric-val {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.2;
+.admin-stat-card:hover,
+.metric-card:hover {
+  border-color: var(--admin-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.metric-title {
-  font-size: 0.76rem;
+.admin-stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.admin-stat-title {
+  font-size: 0.74rem;
+  font-weight: 700;
   color: var(--text-muted);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  margin-top: 4px;
+}
+
+.admin-stat-icon {
+  color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+}
+
+.admin-stat-value {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  font-family: var(--font-sans);
+  margin-bottom: 6px;
+}
+
+.admin-stat-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 /* ==========================================
@@ -430,37 +429,18 @@ body.admin-body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.vault-banner-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.vault-shield-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  background: rgba(59, 130, 246, 0.12);
-  color: var(--accent-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  flex-shrink: 0;
-}
-
-.vault-banner-title {
-  font-size: 1.15rem;
+.vault-security-pill {
+  font-size: 0.7rem;
   font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 4px 0;
-}
-
-.vault-banner-desc {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.4;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ==========================================
@@ -474,6 +454,7 @@ body.admin-body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
+.admin-table-toolbar,
 .table-toolbar {
   padding: 16px 22px;
   border-bottom: 1px solid var(--admin-card-border);
@@ -482,21 +463,14 @@ body.admin-body {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  background: rgba(255, 255, 255, 0.015);
-}
-
-.table-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .filter-select {
-  padding: 7px 14px;
-  background: #06080d;
-  border: 1px solid var(--admin-card-border);
+  background: #06080e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  padding: 7px 12px;
   border-radius: 6px;
-  color: #ffffff;
   font-size: 0.84rem;
   outline: none;
   font-family: inherit;
@@ -587,6 +561,8 @@ body.admin-body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .badge-status.active {
@@ -609,6 +585,8 @@ body.admin-body {
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .badge-test {
@@ -626,7 +604,8 @@ body.admin-body {
 .table-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .btn-icon-action {
@@ -644,8 +623,9 @@ body.admin-body {
 }
 
 .btn-icon-action:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .btn-icon-action.delete:hover {
@@ -665,32 +645,11 @@ body.admin-body {
   gap: 12px;
 }
 
-.empty-icon-wrap {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  color: var(--accent-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
 .empty-title {
   font-size: 1.05rem;
   font-weight: 600;
   color: #ffffff;
   margin: 0;
-}
-
-.empty-desc {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
-  max-width: 480px;
-  margin: 0 auto;
-  line-height: 1.5;
 }
 
 /* ==========================================
@@ -725,7 +684,7 @@ body.admin-body {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
   max-height: 90vh;
   overflow-y: auto;
   padding: 28px 30px;
@@ -758,6 +717,11 @@ body.admin-body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.modal-close-btn,
+.modal-close-trigger {
+  cursor: pointer;
+}
+
 .modal-close-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -768,7 +732,6 @@ body.admin-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   transition: all 0.15s ease;
 }
 
@@ -779,12 +742,13 @@ body.admin-body {
 }
 
 /* ==========================================
-   FORM CONTROLS
+   FORM CONTROLS & BALANCED ROWS
    ========================================== */
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
+  align-items: flex-start;
 }
 
 .form-group {
@@ -803,7 +767,7 @@ body.admin-body {
 
 .form-control {
   width: 100%;
-  padding: 10px 14px;
+  padding: 11px 14px;
   background: #07090f;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 7px;
@@ -864,12 +828,32 @@ textarea.form-control {
 }
 
 /* ==========================================
-   APP CARDS (APPS TAB)
+   APPS & SERVICES CARDS & EQUALIZED GRID
+   (FIXES ALL LAYOUT SHIFTS & JAGGED BUTTONS)
    ========================================== */
 .admin-apps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 20px;
+  align-items: stretch;
+}
+
+@media (min-width: 1360px) {
+  .admin-apps-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-apps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-apps-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-app-card {
@@ -879,19 +863,26 @@ textarea.form-control {
   padding: 24px;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 230px;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .admin-app-card:hover {
   border-color: var(--admin-card-hover);
   transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .admin-app-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
+  min-height: 34px;
 }
 
 .admin-app-title {
@@ -899,6 +890,9 @@ textarea.form-control {
   font-weight: 700;
   color: #ffffff;
   margin: 0;
+  line-height: 1.35;
+  word-break: break-word;
+  flex: 1;
 }
 
 .admin-app-tagline {
@@ -906,24 +900,28 @@ textarea.form-control {
   color: var(--accent-blue);
   margin-bottom: 10px;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .admin-app-desc {
   font-size: 0.86rem;
   color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 16px;
-  flex-grow: 1;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  flex-grow: 1; /* Pushes bottom meta and actions bar down */
 }
 
 .admin-app-meta {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  padding: 10px;
+  padding: 10px 14px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 6px;
   margin-bottom: 16px;
+  margin-top: auto;
+  line-height: 1.5;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .card-actions-bar {
@@ -931,8 +929,8 @@ textarea.form-control {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: auto; /* Aligns all buttons at the exact same bottom line */
+  padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -940,15 +938,16 @@ textarea.form-control {
   background: rgba(59, 130, 246, 0.12);
   color: #93c5fd;
   border: 1px solid rgba(59, 130, 246, 0.25);
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 6px;
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .btn-card-edit:hover {
@@ -960,15 +959,16 @@ textarea.form-control {
   background: rgba(239, 68, 68, 0.12);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.25);
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 6px;
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .btn-card-delete:hover {
@@ -976,6 +976,9 @@ textarea.form-control {
   color: #ffffff;
 }
 
+/* ==========================================
+   LIVE PREVIEWS & MEDIA CARDS
+   ========================================== */
 .live-preview-box {
   background: rgba(14, 18, 26, 0.8);
   border: 1px dashed rgba(59, 130, 246, 0.4);
@@ -1004,4 +1007,3 @@ textarea.form-control {
   padding: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
