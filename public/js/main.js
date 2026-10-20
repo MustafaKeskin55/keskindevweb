@@ -16,7 +16,8 @@ const SvgIcons = {
   cloud: '<svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
   shield: '<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
   palette: '<svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
-  trending: '<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+  trending: '<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  globe: '<svg class="svg-icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -219,21 +220,42 @@ async function loadDynamicApps() {
         <span class="tech-tag">${t}</span>
       `).join('');
 
-      let primaryBtn = '';
+      const actionButtons = [];
+
+      if (app.links?.webDemo && app.links.webDemo.trim()) {
+        actionButtons.push(`
+          <a href="${app.links.webDemo}" target="_blank" rel="noopener" class="btn btn-primary btn-card-action">
+            ${SvgIcons.globe}
+            <span>Web Sitesi</span>
+          </a>
+        `);
+      }
+
       if (app.links?.playStore && app.links.playStore.trim()) {
-        primaryBtn = `
-          <a href="${app.links.playStore}" target="_blank" rel="noopener" class="btn btn-primary btn-card-action">
-            <span>Google Play Store</span>
+        actionButtons.push(`
+          <a href="${app.links.playStore}" target="_blank" rel="noopener" class="btn ${actionButtons.length === 0 ? 'btn-primary' : 'btn-secondary'} btn-card-action">
+            <span>Play Store</span>
             ${SvgIcons.external}
           </a>
-        `;
-      } else {
-        primaryBtn = `
+        `);
+      }
+
+      if (app.links?.appStore && app.links.appStore.trim()) {
+        actionButtons.push(`
+          <a href="${app.links.appStore}" target="_blank" rel="noopener" class="btn btn-secondary btn-card-action">
+            <span>App Store</span>
+            ${SvgIcons.external}
+          </a>
+        `);
+      }
+
+      if (actionButtons.length === 0) {
+        actionButtons.push(`
           <a href="#contact" class="btn btn-secondary btn-card-action">
             <span>Bilgi &amp; İletişim</span>
             ${SvgIcons.arrowRight}
           </a>
-        `;
+        `);
       }
 
       return `
@@ -259,8 +281,8 @@ async function loadDynamicApps() {
             <div class="product-meta">
               <span>Platformlar: <strong>${(app.platforms || []).join(', ')}</strong></span>
             </div>
-            <div class="product-links">
-              ${primaryBtn}
+            <div class="product-links" style="display: flex; gap: 6px; flex-wrap: wrap;">
+              ${actionButtons.join('')}
             </div>
           </div>
         </div>

@@ -402,6 +402,9 @@ async function loadApps() {
         <div class="admin-app-meta">
           <strong>Platformlar:</strong> ${(a.platforms || []).join(', ') || '-'}<br/>
           <strong>Teknoloji:</strong> ${(a.techStack || []).join(', ') || '-'}
+          ${(a.links?.webDemo || a.web_demo_url) ? `<br/><strong>Web Sitesi:</strong> <a href="${a.links?.webDemo || a.web_demo_url}" target="_blank" style="color: #60a5fa; text-decoration: underline;">${a.links?.webDemo || a.web_demo_url}</a>` : ''}
+          ${(a.links?.playStore || a.play_store_url) ? `<br/><strong>Google Play:</strong> <a href="${a.links?.playStore || a.play_store_url}" target="_blank" style="color: #34d399; text-decoration: underline;">Play Store</a>` : ''}
+          ${(a.links?.appStore || a.app_store_url) ? `<br/><strong>App Store:</strong> <a href="${a.links?.appStore || a.app_store_url}" target="_blank" style="color: #a78bfa; text-decoration: underline;">App Store</a>` : ''}
         </div>
         <div class="card-actions-bar">
           <button class="btn-card-edit" onclick="editApp('${a.id}')">
@@ -428,6 +431,7 @@ window.openAppModal = function() {
 
   if (form) form.reset();
   if (document.getElementById('app-edit-id')) document.getElementById('app-edit-id').value = '';
+  if (document.getElementById('app-inp-webdemo')) document.getElementById('app-inp-webdemo').value = '';
   if (titleText) titleText.textContent = 'Yeni Uygulama Ekle';
   if (saveBtn) saveBtn.textContent = 'Uygulamayı Kaydet';
   if (modal) modal.classList.add('active');
@@ -456,7 +460,10 @@ window.editApp = function(id) {
   document.getElementById('app-inp-short-desc').value = app.shortDescription || '';
   document.getElementById('app-inp-features').value = (app.features || []).join('\n');
   document.getElementById('app-inp-playstore').value = app.links?.playStore || app.play_store_url || '';
-  document.getElementById('app-inp-appstore').value = app.links?.appStore || app.links?.webDemo || '';
+  document.getElementById('app-inp-appstore').value = app.links?.appStore || app.app_store_url || '';
+  if (document.getElementById('app-inp-webdemo')) {
+    document.getElementById('app-inp-webdemo').value = app.links?.webDemo || app.web_demo_url || '';
+  }
   document.getElementById('app-inp-is-active').checked = app.isActive !== false;
 
   if (modal) modal.classList.add('active');
@@ -1204,8 +1211,9 @@ function initModals() {
         shortDescription: document.getElementById('app-inp-short-desc').value.trim(),
         features: document.getElementById('app-inp-features').value.split('\n').map(s => s.trim()).filter(Boolean),
         links: {
-          playStore: document.getElementById('app-inp-playstore').value.trim(),
-          appStore: document.getElementById('app-inp-appstore').value.trim()
+          playStore: document.getElementById('app-inp-playstore')?.value.trim() || '',
+          appStore: document.getElementById('app-inp-appstore')?.value.trim() || '',
+          webDemo: document.getElementById('app-inp-webdemo')?.value.trim() || ''
         },
         isActive: document.getElementById('app-inp-is-active').checked
       };
