@@ -13,5 +13,3 @@ binding = "DB"
 database_name = "keskindev"
 database_id = "b4c9d5f7-c90e-4c2d-b1f0-577377bdaa56"
 
-[vars]
-ADMIN_PASSCODE_DEFAULT = "keskin2026"

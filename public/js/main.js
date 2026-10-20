@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRecentBlogs();
   initContactForm();
   initSmoothScroll();
+  initHiddenAdminAccess();
 });
 
 // 1. Load Dynamic Settings & Brand Data from SQL
@@ -511,3 +512,32 @@ function initSmoothScroll() {
     });
   }
 }
+
+// 7. Hidden Secure Admin Access (Ctrl + Shift + A or 4 clicks on copyright)
+function initHiddenAdminAccess() {
+  // Klavye Kısayolu: Ctrl + Shift + A (Mac: Cmd + Shift + A)
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+      e.preventDefault();
+      window.location.href = '/admin';
+    }
+  });
+
+  // Footer telif yazısına 4 kez hızlı tıklama
+  const copyright = document.getElementById('footer-copyright-text');
+  if (copyright) {
+    let clicks = 0;
+    let timer = null;
+    copyright.style.cursor = 'default';
+    copyright.addEventListener('click', () => {
+      clicks++;
+      clearTimeout(timer);
+      if (clicks >= 4) {
+        window.location.href = '/admin';
+        clicks = 0;
+      }
+      timer = setTimeout(() => { clicks = 0; }, 2000);
+    });
+  }
+}
+

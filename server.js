@@ -225,7 +225,44 @@ app.post('/api/public/contact', (req, res) => {
 // ADMIN AUTHENTICATION ROUTES
 // ==========================================
 
+const failedLoginAttempts = new Map();
+
+function checkLoginRateLimit(clientIp) {
+  const record = failedLoginAttempts.get(clientIp);
+  if (!record) return { allowed: true };
+  if (record.lockedUntil && record.lockedUntil > Date.now()) {
+    const remainingMins = Math.ceil((record.lockedUntil - Date.now()) / 60000);
+    return { allowed: false, remainingMins };
+  }
+  if (record.lockedUntil && record.lockedUntil <= Date.now()) {
+    failedLoginAttempts.delete(clientIp);
+    return { allowed: true };
+  }
+  return { allowed: true };
+}
+
+function recordFailedLogin(clientIp) {
+  const record = failedLoginAttempts.get(clientIp) || { count: 0 };
+  record.count += 1;
+  if (record.count >= 5) {
+    record.lockedUntil = Date.now() + 15 * 60 * 1000;
+  }
+  failedLoginAttempts.set(clientIp, record);
+}
+
+function resetFailedLogin(clientIp) {
+  failedLoginAttempts.delete(clientIp);
+}
+
 app.post('/api/admin/auth/login', (req, res) => {
+  const clientIp = req.ip || req.connection.remoteAddress || '127.0.0.1';
+  const rateCheck = checkLoginRateLimit(clientIp);
+  if (!rateCheck.allowed) {
+    return res.status(429).json({
+      error: `Güvenlik kilidi: Çok fazla başarısız giriş denemesi. Lütfen ${rateCheck.remainingMins} dakika sonra tekrar deneyin.`
+    });
+  }
+
   const { passcode } = req.body;
   if (!passcode) {
     return res.status(400).json({ error: 'Lütfen PIN kodunuzu girin.' });
@@ -236,10 +273,12 @@ app.post('/api/admin/auth/login', (req, res) => {
     const validPass = passRow?.value || 'keskin2026';
 
     if (passcode.trim() === validPass.trim()) {
-      const token = 'kd_admin_' + crypto.randomBytes(24).toString('hex');
+      resetFailedLogin(clientIp);
+      const token = 'kd_admin_' + crypto.randomBytes(32).toString('hex');
       activeSessions.add(token);
       res.json({ success: true, message: 'Giriş başarılı.', token });
     } else {
+      recordFailedLogin(clientIp);
       res.status(401).json({ error: 'Hatalı yönetici şifresi!' });
     }
   } catch (err) {

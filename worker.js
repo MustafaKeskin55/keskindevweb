@@ -10,8 +10,6 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8'
 };
 
-// In-memory active tokens (Workers isolate memory)
-const activeAdminTokens = new Set();
 
 function jsonResponse(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -50,15 +48,94 @@ function formatBlogRow(row) {
   };
 }
 
-function checkAdminAuth(request) {
+// ==========================================
+// SECURITY: RATE LIMITING & CRYPTOGRAPHIC AUTH
+// ==========================================
+
+const failedLoginAttempts = new Map();
+
+function checkLoginRateLimit(clientIp) {
+  const record = failedLoginAttempts.get(clientIp);
+  if (!record) return { allowed: true };
+  if (record.lockedUntil && record.lockedUntil > Date.now()) {
+    const remainingMins = Math.ceil((record.lockedUntil - Date.now()) / 60000);
+    return { allowed: false, remainingMins };
+  }
+  if (record.lockedUntil && record.lockedUntil <= Date.now()) {
+    failedLoginAttempts.delete(clientIp);
+    return { allowed: true };
+  }
+  return { allowed: true };
+}
+
+function recordFailedLogin(clientIp) {
+  const record = failedLoginAttempts.get(clientIp) || { count: 0 };
+  record.count += 1;
+  if (record.count >= 5) {
+    record.lockedUntil = Date.now() + 15 * 60 * 1000; // 15 dakika güvenlik kilidi
+  }
+  failedLoginAttempts.set(clientIp, record);
+}
+
+function resetFailedLogin(clientIp) {
+  failedLoginAttempts.delete(clientIp);
+}
+
+async function getAdminSecret(env) {
+  try {
+    const passRow = await env.DB.prepare("SELECT value FROM settings WHERE key = 'admin_passcode'").first();
+    return passRow?.value || env.ADMIN_SECRET || 'kd_sec_fallback_key_2026';
+  } catch (e) {
+    return env.ADMIN_SECRET || 'kd_sec_fallback_key_2026';
+  }
+}
+
+async function hmacSha256(message, secret) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function createAdminToken(secret) {
+  const ts = Date.now();
+  const nonce = crypto.randomUUID().replace(/-/g, '');
+  const payload = `${ts}.${nonce}`;
+  const sig = await hmacSha256(payload, secret);
+  return `${payload}.${sig}`;
+}
+
+async function verifyAdminAuth(request, env) {
   const authHeader = request.headers.get('Authorization') || '';
   const token = authHeader.replace(/^Bearer\s+/, '').trim();
   if (!token) return false;
-  // If token starts with kd_live_ or exists in activeAdminTokens
-  if (activeAdminTokens.has(token) || (token.startsWith('kd_live_') && token.length > 20)) {
-    return true;
+
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+
+  const [tsStr, nonce, clientSig] = parts;
+  const ts = parseInt(tsStr, 10);
+  if (isNaN(ts)) return false;
+
+  // Oturum süresi: Maksimum 7 gün
+  if (Date.now() - ts > 7 * 24 * 60 * 60 * 1000) return false;
+
+  const secret = await getAdminSecret(env);
+  const payload = `${tsStr}.${nonce}`;
+  const expectedSig = await hmacSha256(payload, secret);
+
+  if (expectedSig.length !== clientSig.length) return false;
+  let diff = 0;
+  for (let i = 0; i < clientSig.length; i++) {
+    diff |= clientSig.charCodeAt(i) ^ expectedSig.charCodeAt(i);
   }
-  return false;
+  return diff === 0;
 }
 
 export default {
@@ -243,22 +320,34 @@ export default {
     // 2. ADMIN AUTHENTICATION
     // ==========================================
 
-    // Admin Login
+    // Admin Login (Rate-limited & Cryptographically Signed)
     if (pathname === '/api/admin/auth/login' && method === 'POST') {
       try {
+        const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '127.0.0.1';
+        const rateCheck = checkLoginRateLimit(clientIp);
+        if (!rateCheck.allowed) {
+          return jsonResponse({
+            error: `Güvenlik kilidi: Çok fazla başarısız giriş denemesi. Lütfen ${rateCheck.remainingMins} dakika sonra tekrar deneyin.`
+          }, 429);
+        }
+
         const { passcode } = await request.json();
         if (!passcode) {
           return jsonResponse({ error: 'Lütfen PIN kodunuzu girin.' }, 400);
         }
 
         const passRow = await env.DB.prepare("SELECT value FROM settings WHERE key = 'admin_passcode'").first();
-        const validPass = passRow?.value || env.ADMIN_PASSCODE_DEFAULT || 'keskin2026';
+        const validPass = passRow?.value;
+        if (!validPass) {
+          return jsonResponse({ error: 'Sistem yöneticisi şifresi yapılandırılmamış.' }, 500);
+        }
 
         if (passcode.trim() === validPass.trim()) {
-          const token = 'kd_live_' + crypto.randomUUID().replace(/-/g, '') + '_' + Date.now();
-          activeAdminTokens.add(token);
+          resetFailedLogin(clientIp);
+          const token = await createAdminToken(validPass.trim());
           return jsonResponse({ success: true, message: 'Giriş başarılı.', token });
         } else {
+          recordFailedLogin(clientIp);
           return jsonResponse({ error: 'Hatalı yönetici şifresi!' }, 401);
         }
       } catch (err) {
@@ -268,18 +357,16 @@ export default {
 
     // Admin Auth Verify
     if (pathname === '/api/admin/auth/verify' && method === 'GET') {
-      if (checkAdminAuth(request)) {
+      const isAuth = await verifyAdminAuth(request, env);
+      if (isAuth) {
         return jsonResponse({ success: true, authenticated: true });
       }
-      return jsonResponse({ error: 'Yetkilendirme geçersiz.' }, 401);
+      return jsonResponse({ error: 'Yetkilendirme geçersiz veya süresi dolmuş.' }, 401);
     }
 
     // Admin Logout
     if (pathname === '/api/admin/auth/logout' && method === 'POST') {
-      const authHeader = request.headers.get('Authorization') || '';
-      const token = authHeader.replace(/^Bearer\s+/, '').trim();
-      activeAdminTokens.delete(token);
-      return jsonResponse({ success: true, message: 'Oturum kapatıldı.' });
+      return jsonResponse({ success: true, message: 'Oturum sonlandırıldı.' });
     }
 
     // ==========================================
@@ -287,7 +374,8 @@ export default {
     // ==========================================
 
     if (pathname.startsWith('/api/admin/')) {
-      if (!checkAdminAuth(request)) {
+      const isAuth = await verifyAdminAuth(request, env);
+      if (!isAuth) {
         return jsonResponse({ error: 'Yetkisiz erişim. Lütfen giriş yapın.' }, 401);
       }
 
