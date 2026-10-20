@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "build": "echo Build OK",
     "dev:cf": "wrangler dev",
     "deploy": "wrangler deploy",
     "db:d1:init": "wrangler d1 execute keskindev --remote --file=./database/keskindev_full.sql",
