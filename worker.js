@@ -153,6 +153,11 @@ export default {
         const map = {};
         (results || []).forEach(r => { map[r.key] = r.value; });
 
+        let parsedServices = [];
+        try {
+          parsedServices = map.services_json ? JSON.parse(map.services_json) : [];
+        } catch (_) {}
+
         return jsonResponse({
           success: true,
           data: {
@@ -160,8 +165,32 @@ export default {
             legalName: map.company_name || 'KeskinDev',
             slogan: map.slogan || 'Yarının Teknolojisini Bugün İnşa Ediyoruz',
             description: map.description || 'Modern mobil, SaaS ve kurumsal yazılımlar geliştiren yenilikçi teknoloji kuruluşu.',
+            hero: {
+              badge: map.hero_badge || 'Yazılım & Dijital Ürün Stüdyosu',
+              title: map.hero_title || 'Geleceğe yön veren, güvenilir ve yüksek performanslı yazılımlar',
+              titleHighlight: map.hero_title_highlight || 'yüksek performanslı',
+              subtitle: map.hero_subtitle || 'Yenilikçi mobil uygulamalar, SaaS ve kurumsal yönetim yazılımları geliştiriyoruz.',
+              btnPrimaryText: map.hero_btn_primary_text || 'Ürünleri İncele',
+              btnPrimaryLink: map.hero_btn_primary_link || '#products',
+              btnSecondaryText: map.hero_btn_secondary_text || 'Mühendislik Notları',
+              btnSecondaryLink: map.hero_btn_secondary_link || '/blog'
+            },
+            services: parsedServices,
+            branding: {
+              logoUrl: map.branding_logo_url || '/assets/logo.svg',
+              faviconUrl: map.branding_favicon_url || '/assets/favicon.svg',
+              ogImage: map.branding_og_image || '/assets/logo.svg'
+            },
             contact: {
-              email: map.contact_email || 'iletisim@keskindev.com'
+              email: map.contact_email || 'iletisim@keskindev.com',
+              phone: map.contact_phone || '+90 (555) 000 00 00',
+              address: map.contact_address || 'Kayseri, Türkiye'
+            },
+            social: {
+              github: map.social_github || '',
+              playStore: map.social_playstore || '',
+              twitter: map.social_twitter || '',
+              linkedin: map.social_linkedin || ''
             },
             geo: {
               region: map.geo_region || 'TR-38',
@@ -172,6 +201,10 @@ export default {
             seo: {
               title: map.seo_title || 'KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri',
               metaKeywords: map.seo_keywords || 'keskindev, mümin pusulası, site yönetimi, ticko'
+            },
+            footer: {
+              desc: map.footer_desc || 'Yenilikçi dijital ürünleri geliştiren kullanıcı odaklı modern teknoloji kuruluşu.',
+              copyright: map.footer_copyright || '© 2026 KeskinDev. Tüm hakları saklıdır.'
             }
           }
         });
@@ -351,6 +384,86 @@ export default {
         }
       }
 
+      // Apps: POST
+      if (pathname === '/api/admin/apps' && method === 'POST') {
+        try {
+          const body = await request.json();
+          const { id, name, slug, tagline, category, platforms, status, shortDescription, fullDescription, features, techStack, links, isActive } = body;
+          if (!name || !category) {
+            return jsonResponse({ error: 'Uygulama adı ve kategori zorunludur.' }, 400);
+          }
+
+          const appId = id || (slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'app-' + Date.now();
+          const safeSlug = slug || appId;
+          const pList = Array.isArray(platforms) ? platforms : (typeof platforms === 'string' ? platforms.split(',').map(s => s.trim()) : []);
+          const fList = Array.isArray(features) ? features : (typeof features === 'string' ? features.split('\n').map(s => s.trim()).filter(Boolean) : []);
+          const tList = Array.isArray(techStack) ? techStack : (typeof techStack === 'string' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+          await env.DB.prepare(`
+            INSERT INTO apps (
+              id, name, slug, tagline, category, platforms, status,
+              short_description, full_description, features, tech_stack,
+              play_store_url, app_store_url, web_demo_url, is_active
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            appId, name, safeSlug, tagline || '', category,
+            JSON.stringify(pList), status || 'Yayında',
+            shortDescription || '', fullDescription || '',
+            JSON.stringify(fList), JSON.stringify(tList),
+            links?.playStore || '', links?.appStore || '', links?.webDemo || '',
+            isActive !== undefined ? (isActive ? 1 : 0) : 1
+          ).run();
+
+          return jsonResponse({ success: true, message: 'Yeni uygulama kaydedildi.', id: appId }, 201);
+        } catch (err) {
+          return jsonResponse({ error: 'Uygulama kaydedilemedi: ' + err.message }, 500);
+        }
+      }
+
+      // Apps: PUT
+      if (pathname.match(/^\/api\/admin\/apps\/[^\/]+$/) && method === 'PUT') {
+        const id = pathname.split('/')[4];
+        try {
+          const body = await request.json();
+          const { name, slug, tagline, category, platforms, status, shortDescription, fullDescription, features, techStack, links, isActive } = body;
+          const pList = Array.isArray(platforms) ? platforms : (typeof platforms === 'string' ? platforms.split(',').map(s => s.trim()) : []);
+          const fList = Array.isArray(features) ? features : (typeof features === 'string' ? features.split('\n').map(s => s.trim()).filter(Boolean) : []);
+          const tList = Array.isArray(techStack) ? techStack : (typeof techStack === 'string' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+          await env.DB.prepare(`
+            UPDATE apps SET
+              name = ?, slug = ?, tagline = ?, category = ?, platforms = ?, status = ?,
+              short_description = ?, full_description = ?, features = ?, tech_stack = ?,
+              play_store_url = ?, app_store_url = ?, web_demo_url = ?, is_active = ?,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).bind(
+            name, slug, tagline || '', category,
+            JSON.stringify(pList), status || 'Yayında',
+            shortDescription || '', fullDescription || '',
+            JSON.stringify(fList), JSON.stringify(tList),
+            links?.playStore || '', links?.appStore || '', links?.webDemo || '',
+            isActive ? 1 : 0,
+            id
+          ).run();
+
+          return jsonResponse({ success: true, message: 'Uygulama başarıyla güncellendi.' });
+        } catch (err) {
+          return jsonResponse({ error: 'Güncelleme hatası: ' + err.message }, 500);
+        }
+      }
+
+      // Apps: DELETE
+      if (pathname.match(/^\/api\/admin\/apps\/[^\/]+$/) && method === 'DELETE') {
+        const id = pathname.split('/')[4];
+        try {
+          await env.DB.prepare('DELETE FROM apps WHERE id = ?').bind(id).run();
+          return jsonResponse({ success: true, message: 'Uygulama silindi.' });
+        } catch (err) {
+          return jsonResponse({ error: 'Silme hatası: ' + err.message }, 500);
+        }
+      }
+
       // Blogs: GET
       if (pathname === '/api/admin/blogs' && method === 'GET') {
         try {
@@ -365,24 +478,46 @@ export default {
       if (pathname === '/api/admin/blogs' && method === 'POST') {
         try {
           const body = await request.json();
-          const { title, slug, category, author, readTime, tags, summary, content } = body;
+          const { title, slug, category, author, readTime, tags, summary, content, coverGradient, featured } = body;
           if (!title || !category || !content) {
             return jsonResponse({ error: 'Başlık, kategori ve içerik zorunludur.' }, 400);
           }
 
           const id = 'blog-' + Date.now();
           const safeSlug = (slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || id;
-          const tagList = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+          const tagList = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
           const publishedDate = new Date().toISOString().slice(0, 10);
 
           await env.DB.prepare(`
-            INSERT INTO blogs (id, slug, title, category, author, read_time, tags, summary, content, published_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `).bind(id, safeSlug, title, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, publishedDate).run();
+            INSERT INTO blogs (id, slug, title, category, author, read_time, tags, summary, content, cover_gradient, is_featured, published_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(id, safeSlug, title, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, coverGradient || 'linear-gradient(135deg, #059669 0%, #10b981 100%)', featured ? 1 : 0, publishedDate).run();
 
           return jsonResponse({ success: true, message: 'Blog makalesi yayınlandı.', id }, 201);
         } catch (err) {
           return jsonResponse({ error: 'Blog eklenemedi: ' + err.message }, 500);
+        }
+      }
+
+      // Blogs: PUT
+      if (pathname.match(/^\/api\/admin\/blogs\/[^\/]+$/) && method === 'PUT') {
+        const id = pathname.split('/')[4];
+        try {
+          const body = await request.json();
+          const { title, slug, category, author, readTime, tags, summary, content, coverGradient, featured } = body;
+          const tagList = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+
+          await env.DB.prepare(`
+            UPDATE blogs SET
+              title = ?, slug = ?, category = ?, author = ?, read_time = ?,
+              tags = ?, summary = ?, content = ?, cover_gradient = ?, is_featured = ?,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).bind(title, slug, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, coverGradient || '', featured ? 1 : 0, id).run();
+
+          return jsonResponse({ success: true, message: 'Blog makalesi güncellendi.' });
+        } catch (err) {
+          return jsonResponse({ error: 'Güncelleme hatası: ' + err.message }, 500);
         }
       }
 
@@ -436,21 +571,59 @@ export default {
           const map = {};
           (results || []).forEach(r => { map[r.key] = r.value; });
 
+          let parsedServices = [];
+          try {
+            parsedServices = map.services_json ? JSON.parse(map.services_json) : [];
+          } catch (_) {}
+
           return jsonResponse({
             success: true,
             data: {
+              raw: map,
               companyName: map.company_name || 'KeskinDev',
+              founder: map.founder || 'Mustafa Keskin',
               slogan: map.slogan || '',
               adminPasscode: map.admin_passcode || 'keskin2026',
-              seo: {
-                title: map.seo_title || '',
-                metaKeywords: map.seo_keywords || ''
+              hero: {
+                badge: map.hero_badge || 'Yazılım & Dijital Ürün Stüdyosu',
+                title: map.hero_title || 'Geleceğe yön veren, güvenilir ve yüksek performanslı yazılımlar',
+                titleHighlight: map.hero_title_highlight || 'yüksek performanslı',
+                subtitle: map.hero_subtitle || 'Yenilikçi mobil uygulamalar, SaaS ve kurumsal yönetim yazılımları geliştiriyoruz.',
+                btnPrimaryText: map.hero_btn_primary_text || 'Ürünleri İncele',
+                btnPrimaryLink: map.hero_btn_primary_link || '#products',
+                btnSecondaryText: map.hero_btn_secondary_text || 'Mühendislik Notları',
+                btnSecondaryLink: map.hero_btn_secondary_link || '/blog'
+              },
+              services: parsedServices,
+              branding: {
+                logoUrl: map.branding_logo_url || '/assets/logo.svg',
+                faviconUrl: map.branding_favicon_url || '/assets/favicon.svg',
+                ogImage: map.branding_og_image || '/assets/logo.svg'
+              },
+              contact: {
+                email: map.contact_email || 'iletisim@keskindev.com',
+                phone: map.contact_phone || '+90 (555) 000 00 00',
+                address: map.contact_address || 'Kayseri, Türkiye'
+              },
+              social: {
+                github: map.social_github || '',
+                playStore: map.social_playstore || '',
+                twitter: map.social_twitter || '',
+                linkedin: map.social_linkedin || ''
               },
               geo: {
                 region: map.geo_region || 'TR-38',
                 placename: map.geo_placename || 'Kayseri, Türkiye',
                 latitude: parseFloat(map.geo_latitude) || 38.7205,
                 longitude: parseFloat(map.geo_longitude) || 35.4826
+              },
+              seo: {
+                title: map.seo_title || '',
+                metaKeywords: map.seo_keywords || ''
+              },
+              footer: {
+                desc: map.footer_desc || 'Yenilikçi dijital ürünleri geliştiren kullanıcı odaklı modern teknoloji kuruluşu.',
+                copyright: map.footer_copyright || '© 2026 KeskinDev. Tüm hakları saklıdır.'
               }
             }
           });
@@ -462,19 +635,23 @@ export default {
       // Settings: PUT
       if (pathname === '/api/admin/settings' && method === 'PUT') {
         try {
-          const body = await request.json();
-          const { companyName, slogan, adminPasscode, seo, geo } = body;
-
+          const payload = await request.json();
           const statements = [];
-          if (companyName) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('company_name', ?)").bind(companyName));
-          if (slogan) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('slogan', ?)").bind(slogan));
-          if (adminPasscode) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_passcode', ?)").bind(adminPasscode));
-          if (seo?.title) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('seo_title', ?)").bind(seo.title));
-          if (seo?.metaKeywords) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('seo_keywords', ?)").bind(seo.metaKeywords));
-          if (geo?.region) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_region', ?)").bind(geo.region));
-          if (geo?.placename) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_placename', ?)").bind(geo.placename));
-          if (geo?.latitude) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_latitude', ?)").bind(String(geo.latitude)));
-          if (geo?.longitude) statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_longitude', ?)").bind(String(geo.longitude)));
+
+          for (const [key, value] of Object.entries(payload)) {
+            if (typeof value === 'object' && value !== null) {
+              if (key === 'services_json' || key === 'tech_stack_json') {
+                statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, typeof value === 'string' ? value : JSON.stringify(value)));
+              } else {
+                for (const [subKey, subVal] of Object.entries(value)) {
+                  const compositeKey = `${key}_${subKey}`;
+                  statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(compositeKey, String(subVal ?? '')));
+                }
+              }
+            } else {
+              statements.push(env.DB.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, String(value ?? '')));
+            }
+          }
 
           if (statements.length > 0) {
             await env.DB.batch(statements);

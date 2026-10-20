@@ -137,6 +137,11 @@ app.get('/api/public/settings', (req, res) => {
     const map = {};
     rows.forEach(r => { map[r.key] = r.value; });
 
+    let parsedServices = [];
+    try {
+      parsedServices = map.services_json ? JSON.parse(map.services_json) : [];
+    } catch (_) {}
+
     res.json({
       success: true,
       data: {
@@ -144,8 +149,32 @@ app.get('/api/public/settings', (req, res) => {
         legalName: map.company_name || 'KeskinDev',
         slogan: map.slogan || 'Yarının Teknolojisini Bugün İnşa Ediyoruz',
         description: map.description || 'Modern mobil, SaaS ve kurumsal yazılımlar geliştiren yenilikçi teknoloji kuruluşu.',
+        hero: {
+          badge: map.hero_badge || 'Yazılım & Dijital Ürün Stüdyosu',
+          title: map.hero_title || 'Geleceğe yön veren, güvenilir ve yüksek performanslı yazılımlar',
+          titleHighlight: map.hero_title_highlight || 'yüksek performanslı',
+          subtitle: map.hero_subtitle || 'Yenilikçi mobil uygulamalar, SaaS ve kurumsal yönetim yazılımları geliştiriyoruz.',
+          btnPrimaryText: map.hero_btn_primary_text || 'Ürünleri İncele',
+          btnPrimaryLink: map.hero_btn_primary_link || '#products',
+          btnSecondaryText: map.hero_btn_secondary_text || 'Mühendislik Notları',
+          btnSecondaryLink: map.hero_btn_secondary_link || '/blog'
+        },
+        services: parsedServices,
+        branding: {
+          logoUrl: map.branding_logo_url || '/assets/logo.svg',
+          faviconUrl: map.branding_favicon_url || '/assets/favicon.svg',
+          ogImage: map.branding_og_image || '/assets/logo.svg'
+        },
         contact: {
-          email: map.contact_email || 'iletisim@keskindev.com'
+          email: map.contact_email || 'iletisim@keskindev.com',
+          phone: map.contact_phone || '+90 (555) 000 00 00',
+          address: map.contact_address || 'Kayseri, Türkiye'
+        },
+        social: {
+          github: map.social_github || '',
+          playStore: map.social_playstore || '',
+          twitter: map.social_twitter || '',
+          linkedin: map.social_linkedin || ''
         },
         geo: {
           region: map.geo_region || 'TR-38',
@@ -156,6 +185,10 @@ app.get('/api/public/settings', (req, res) => {
         seo: {
           title: map.seo_title || 'KeskinDev | Modern Mobil, SaaS & Kurumsal Yazılım Teknolojileri',
           metaKeywords: map.seo_keywords || 'keskindev, mümin pusulası, site yönetimi, ticko'
+        },
+        footer: {
+          desc: map.footer_desc || 'Yenilikçi dijital ürünleri geliştiren kullanıcı odaklı modern teknoloji kuruluşu.',
+          copyright: map.footer_copyright || '© 2026 KeskinDev. Tüm hakları saklıdır.'
         }
       }
     });
@@ -321,6 +354,79 @@ app.get('/api/admin/apps', requireAdmin, (req, res) => {
   }
 });
 
+app.post('/api/admin/apps', requireAdmin, (req, res) => {
+  const { id, name, slug, tagline, category, platforms, status, shortDescription, fullDescription, features, techStack, links, isActive } = req.body;
+  if (!name || !category) {
+    return res.status(400).json({ error: 'Uygulama adı ve kategori zorunludur.' });
+  }
+
+  const appId = id || (slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || 'app-' + Date.now();
+  const safeSlug = slug || appId;
+  const pList = Array.isArray(platforms) ? platforms : (typeof platforms === 'string' ? platforms.split(',').map(s => s.trim()) : []);
+  const fList = Array.isArray(features) ? features : (typeof features === 'string' ? features.split('\n').map(s => s.trim()).filter(Boolean) : []);
+  const tList = Array.isArray(techStack) ? techStack : (typeof techStack === 'string' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+  try {
+    db.run(`
+      INSERT INTO apps (
+        id, name, slug, tagline, category, platforms, status,
+        short_description, full_description, features, tech_stack,
+        play_store_url, app_store_url, web_demo_url, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      appId, name, safeSlug, tagline || '', category,
+      JSON.stringify(pList), status || 'Yayında',
+      shortDescription || '', fullDescription || '',
+      JSON.stringify(fList), JSON.stringify(tList),
+      links?.playStore || '', links?.appStore || '', links?.webDemo || '',
+      isActive !== undefined ? (isActive ? 1 : 0) : 1
+    ]);
+
+    res.status(201).json({ success: true, message: 'Yeni uygulama kaydedildi.', id: appId });
+  } catch (err) {
+    res.status(500).json({ error: 'Uygulama kaydedilemedi: ' + err.message });
+  }
+});
+
+app.put('/api/admin/apps/:id', requireAdmin, (req, res) => {
+  const { name, slug, tagline, category, platforms, status, shortDescription, fullDescription, features, techStack, links, isActive } = req.body;
+  const pList = Array.isArray(platforms) ? platforms : (typeof platforms === 'string' ? platforms.split(',').map(s => s.trim()) : []);
+  const fList = Array.isArray(features) ? features : (typeof features === 'string' ? features.split('\n').map(s => s.trim()).filter(Boolean) : []);
+  const tList = Array.isArray(techStack) ? techStack : (typeof techStack === 'string' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+  try {
+    db.run(`
+      UPDATE apps SET
+        name = ?, slug = ?, tagline = ?, category = ?, platforms = ?, status = ?,
+        short_description = ?, full_description = ?, features = ?, tech_stack = ?,
+        play_store_url = ?, app_store_url = ?, web_demo_url = ?, is_active = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [
+      name, slug, tagline || '', category,
+      JSON.stringify(pList), status || 'Yayında',
+      shortDescription || '', fullDescription || '',
+      JSON.stringify(fList), JSON.stringify(tList),
+      links?.playStore || '', links?.appStore || '', links?.webDemo || '',
+      isActive ? 1 : 0,
+      req.params.id
+    ]);
+
+    res.json({ success: true, message: 'Uygulama başarıyla güncellendi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Güncelleme hatası: ' + err.message });
+  }
+});
+
+app.delete('/api/admin/apps/:id', requireAdmin, (req, res) => {
+  try {
+    db.run('DELETE FROM apps WHERE id = ?', [req.params.id]);
+    res.json({ success: true, message: 'Uygulama silindi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Silme hatası: ' + err.message });
+  }
+});
+
 // 4. Admin Blogs
 app.get('/api/admin/blogs', requireAdmin, (req, res) => {
   try {
@@ -332,25 +438,44 @@ app.get('/api/admin/blogs', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/blogs', requireAdmin, (req, res) => {
-  const { title, slug, category, author, readTime, tags, summary, content } = req.body;
+  const { title, slug, category, author, readTime, tags, summary, content, coverGradient, featured } = req.body;
   if (!title || !category || !content) {
     return res.status(400).json({ error: 'Başlık, kategori ve içerik zorunludur.' });
   }
 
   const id = 'blog-' + Date.now();
   const safeSlug = (slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) || id;
-  const tagList = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const tagList = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
   const publishedDate = new Date().toISOString().slice(0, 10);
 
   try {
     db.run(`
-      INSERT INTO blogs (id, slug, title, category, author, read_time, tags, summary, content, published_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [id, safeSlug, title, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, publishedDate]);
+      INSERT INTO blogs (id, slug, title, category, author, read_time, tags, summary, content, cover_gradient, is_featured, published_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [id, safeSlug, title, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, coverGradient || 'linear-gradient(135deg, #059669 0%, #10b981 100%)', featured ? 1 : 0, publishedDate]);
 
     res.status(201).json({ success: true, message: 'Blog makalesi yayınlandı.', id });
   } catch (err) {
     res.status(500).json({ error: 'Blog eklenemedi: ' + err.message });
+  }
+});
+
+app.put('/api/admin/blogs/:id', requireAdmin, (req, res) => {
+  const { title, slug, category, author, readTime, tags, summary, content, coverGradient, featured } = req.body;
+  const tagList = Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+
+  try {
+    db.run(`
+      UPDATE blogs SET
+        title = ?, slug = ?, category = ?, author = ?, read_time = ?,
+        tags = ?, summary = ?, content = ?, cover_gradient = ?, is_featured = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [title, slug, category, author || 'KeskinDev', readTime || '5 dk okuma', JSON.stringify(tagList), summary || '', content, coverGradient || '', featured ? 1 : 0, req.params.id]);
+
+    res.json({ success: true, message: 'Blog makalesi güncellendi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Güncelleme hatası: ' + err.message });
   }
 });
 
@@ -391,28 +516,66 @@ app.delete('/api/admin/messages/:id', requireAdmin, (req, res) => {
   }
 });
 
-// 6. Admin Settings
+// 6. Admin Settings (Full Dynamic CMS)
 app.get('/api/admin/settings', requireAdmin, (req, res) => {
   try {
-    const rows = db.query('SELECT key, value FROM settings');
+    const rows = db.query('SELECT key, value, category FROM settings');
     const map = {};
-    rows.forEach(r => map[r.key] = r.value);
+    rows.forEach(r => { map[r.key] = r.value; });
+
+    let parsedServices = [];
+    try {
+      parsedServices = map.services_json ? JSON.parse(map.services_json) : [];
+    } catch (_) {}
 
     res.json({
       success: true,
       data: {
+        raw: map,
         companyName: map.company_name || 'KeskinDev',
+        founder: map.founder || 'Mustafa Keskin',
         slogan: map.slogan || '',
         adminPasscode: map.admin_passcode || 'keskin2026',
-        seo: {
-          title: map.seo_title || '',
-          metaKeywords: map.seo_keywords || ''
+        hero: {
+          badge: map.hero_badge || 'Yazılım & Dijital Ürün Stüdyosu',
+          title: map.hero_title || 'Geleceğe yön veren, güvenilir ve yüksek performanslı yazılımlar',
+          titleHighlight: map.hero_title_highlight || 'yüksek performanslı',
+          subtitle: map.hero_subtitle || 'Yenilikçi mobil uygulamalar, SaaS ve kurumsal yönetim yazılımları geliştiriyoruz.',
+          btnPrimaryText: map.hero_btn_primary_text || 'Ürünleri İncele',
+          btnPrimaryLink: map.hero_btn_primary_link || '#products',
+          btnSecondaryText: map.hero_btn_secondary_text || 'Mühendislik Notları',
+          btnSecondaryLink: map.hero_btn_secondary_link || '/blog'
+        },
+        services: parsedServices,
+        branding: {
+          logoUrl: map.branding_logo_url || '/assets/logo.svg',
+          faviconUrl: map.branding_favicon_url || '/assets/favicon.svg',
+          ogImage: map.branding_og_image || '/assets/logo.svg'
+        },
+        contact: {
+          email: map.contact_email || 'iletisim@keskindev.com',
+          phone: map.contact_phone || '+90 (555) 000 00 00',
+          address: map.contact_address || 'Kayseri, Türkiye'
+        },
+        social: {
+          github: map.social_github || '',
+          playStore: map.social_playstore || '',
+          twitter: map.social_twitter || '',
+          linkedin: map.social_linkedin || ''
         },
         geo: {
           region: map.geo_region || 'TR-38',
           placename: map.geo_placename || 'Kayseri, Türkiye',
           latitude: parseFloat(map.geo_latitude) || 38.7205,
           longitude: parseFloat(map.geo_longitude) || 35.4826
+        },
+        seo: {
+          title: map.seo_title || '',
+          metaKeywords: map.seo_keywords || ''
+        },
+        footer: {
+          desc: map.footer_desc || 'Yenilikçi dijital ürünleri geliştiren kullanıcı odaklı modern teknoloji kuruluşu.',
+          copyright: map.footer_copyright || '© 2026 KeskinDev. Tüm hakları saklıdır.'
         }
       }
     });
@@ -422,20 +585,27 @@ app.get('/api/admin/settings', requireAdmin, (req, res) => {
 });
 
 app.put('/api/admin/settings', requireAdmin, (req, res) => {
-  const { companyName, slogan, adminPasscode, seo, geo } = req.body;
+  const payload = req.body || {};
 
   try {
-    if (companyName) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('company_name', ?)", [companyName]);
-    if (slogan) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('slogan', ?)", [slogan]);
-    if (adminPasscode) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_passcode', ?)", [adminPasscode]);
-    if (seo?.title) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('seo_title', ?)", [seo.title]);
-    if (seo?.metaKeywords) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('seo_keywords', ?)", [seo.metaKeywords]);
-    if (geo?.region) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_region', ?)", [geo.region]);
-    if (geo?.placename) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_placename', ?)", [geo.placename]);
-    if (geo?.latitude) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_latitude', ?)", [String(geo.latitude)]);
-    if (geo?.longitude) db.run("INSERT OR REPLACE INTO settings (key, value) VALUES ('geo_longitude', ?)", [String(geo.longitude)]);
+    for (const [key, value] of Object.entries(payload)) {
+      if (typeof value === 'object' && value !== null) {
+        // Flatten or JSON serialize
+        if (key === 'services_json' || key === 'tech_stack_json') {
+          db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, typeof value === 'string' ? value : JSON.stringify(value)]);
+        } else {
+          // Flatten nested objects like hero, branding, contact
+          for (const [subKey, subVal] of Object.entries(value)) {
+            const compositeKey = `${key}_${subKey}`;
+            db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [compositeKey, String(subVal ?? '')]);
+          }
+        }
+      } else {
+        db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, String(value ?? '')]);
+      }
+    }
 
-    res.json({ success: true, message: 'Ayarlar veritabanında güncellendi.' });
+    res.json({ success: true, message: 'Tüm ayarlar ve içerikler başarıyla veritabanına kaydedildi.' });
   } catch (err) {
     res.status(500).json({ error: 'Ayarlar kaydedilemedi: ' + err.message });
   }
@@ -466,6 +636,15 @@ app.get('/blog', (req, res) => {
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Global error handling middleware (catches bad JSON or unexpected errors without crashing)
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ success: false, error: 'Geçersiz JSON formatı.' });
+  }
+  console.error('Sunucu Hatası:', err);
+  res.status(500).json({ success: false, error: 'Sunucu içi hata meydana geldi.' });
 });
 
 // Catch-all

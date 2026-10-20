@@ -11,7 +11,12 @@ const SvgIcons = {
   external: '<svg class="svg-icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
   calendar: '<svg class="svg-icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
   clock: '<svg class="svg-icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-  eye: '<svg class="svg-icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+  eye: '<svg class="svg-icon" style="width: 13px; height: 13px;" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+  mobile: '<svg class="svg-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+  cloud: '<svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
+  shield: '<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  palette: '<svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
+  trending: '<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,6 +36,57 @@ async function loadDynamicSettings() {
     if (!json.success || !json.data) return;
 
     const s = json.data;
+    
+    // Dynamic Hero Elements
+    const heroBadge = document.getElementById('hero-badge-title');
+    const heroTitle = document.getElementById('hero-main-title');
+    const heroSubtitle = document.getElementById('hero-subtitle-container');
+    const heroBtnPrimary = document.getElementById('hero-btn-primary');
+    const heroBtnSecondary = document.getElementById('hero-btn-secondary');
+
+    if (heroBadge && s.hero?.badge) {
+      heroBadge.textContent = s.hero.badge;
+    }
+    if (heroTitle && s.hero?.title) {
+      const hl = s.hero.titleHighlight || '';
+      let titleHtml = s.hero.title;
+      if (hl && titleHtml.includes(hl)) {
+        titleHtml = titleHtml.replace(hl, `<span class="gradient-text-accent">${hl}</span>`);
+      } else if (hl) {
+        titleHtml += ` <span class="gradient-text-accent">${hl}</span>`;
+      }
+      heroTitle.innerHTML = titleHtml;
+    }
+    if (heroSubtitle && s.hero?.subtitle) {
+      heroSubtitle.innerHTML = s.hero.subtitle;
+      heroSubtitle.dataset.customized = "true";
+    }
+    if (heroBtnPrimary && s.hero?.btnPrimaryText) {
+      heroBtnPrimary.querySelector('span').textContent = s.hero.btnPrimaryText;
+      if (s.hero.btnPrimaryLink) heroBtnPrimary.href = s.hero.btnPrimaryLink;
+    }
+    if (heroBtnSecondary && s.hero?.btnSecondaryText) {
+      heroBtnSecondary.textContent = s.hero.btnSecondaryText;
+      if (s.hero.btnSecondaryLink) heroBtnSecondary.href = s.hero.btnSecondaryLink;
+    }
+
+    // Dynamic Branding (Logos & Favicons)
+    if (s.branding?.logoUrl) {
+      document.querySelectorAll('.logo-wrap img').forEach(img => {
+        img.src = s.branding.logoUrl;
+      });
+    }
+    if (s.branding?.faviconUrl) {
+      const fav = document.querySelector("link[rel*='icon']");
+      if (fav) fav.href = s.branding.faviconUrl;
+    }
+
+    // Dynamic Services Grid
+    if (s.services && Array.isArray(s.services) && s.services.length > 0) {
+      renderDynamicServices(s.services);
+    }
+
+    // Footer & Contact Data
     const directEmail = document.getElementById('contact-direct-email');
     const footerEmail = document.getElementById('footer-email-link');
     const geoBadge = document.getElementById('footer-geo-badge');
@@ -49,11 +105,32 @@ async function loadDynamicSettings() {
       geoBadge.textContent = s.geo.placename + ' (' + (s.geo.region || 'TR-38') + ')';
     }
     if (copyright) {
-      copyright.innerHTML = '&copy; ' + new Date().getFullYear() + ' ' + (s.companyName || 'KeskinDev') + '. Tüm hakları saklıdır.';
+      copyright.innerHTML = s.footer?.copyright || ('&copy; ' + new Date().getFullYear() + ' ' + (s.companyName || 'KeskinDev') + '. Tüm hakları saklıdır.');
+    }
+    if (companyDesc && s.footer?.desc) {
+      companyDesc.textContent = s.footer.desc;
     }
   } catch (e) {
     console.error('Settings load error:', e);
   }
+}
+
+function renderDynamicServices(services) {
+  const container = document.getElementById('services-grid');
+  if (!container) return;
+
+  container.innerHTML = services.map(srv => {
+    let iconSvg = SvgIcons[srv.icon] || SvgIcons.cpu;
+    return `
+      <div class="service-card">
+        <div class="service-icon">
+          ${iconSvg}
+        </div>
+        <h3 class="service-title">${srv.title}</h3>
+        <p class="service-desc">${srv.desc}</p>
+      </div>
+    `;
+  }).join('');
 }
 
 // 2. Load Live Real Statistics from SQL Database
@@ -110,8 +187,8 @@ async function loadDynamicApps() {
 
     const apps = json.data;
 
-    // Dynamically update hero subtitle with real app names from database
-    if (heroSubtitle && apps.length > 0) {
+    // Dynamically update hero subtitle with real app names from database if not customized in CMS
+    if (heroSubtitle && !heroSubtitle.dataset.customized && apps.length > 0) {
       const appNames = apps.map(a => '<strong>' + a.name + '</strong>').join(', ');
       heroSubtitle.innerHTML = appNames + ' gibi mobil uygulamalar, SaaS ve kurumsal yönetim yazılımları geliştiriyoruz.';
     }
