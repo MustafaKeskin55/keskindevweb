@@ -1,17 +1,17 @@
-name = "keskindevweb"
+name = "keskindev"
 main = "worker.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
-
-[observability.logs]
-enabled = false
-invocation_logs = true
 
 # Custom Domain Routing
 routes = [
   { pattern = "keskindev.com/*", zone_name = "keskindev.com" },
   { pattern = "www.keskindev.com/*", zone_name = "keskindev.com" }
 ]
+
+[observability.logs]
+enabled = false
+invocation_logs = true
 
 # Cloudflare Workers / Pages Static Assets
 [assets]
