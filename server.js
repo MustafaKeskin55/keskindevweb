@@ -414,6 +414,26 @@ app.post('/api/admin/ad-keys', requireAdmin, (req, res) => {
   }
 });
 
+app.put('/api/admin/ad-keys/:id', requireAdmin, (req, res) => {
+  const { appId, appName, network, platform, unitType, adUnitId, testMode, status, notes } = req.body;
+
+  if (!appId || !network || !platform || !unitType || !adUnitId) {
+    return res.status(400).json({ error: 'Tüm zorunlu alanları doldurun.' });
+  }
+
+  try {
+    db.run(`
+      UPDATE ad_keys 
+      SET app_id = ?, app_name = ?, network = ?, platform = ?, unit_type = ?, ad_unit_id = ?, test_mode = ?, status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [appId, appName || appId, network, platform, unitType, adUnitId.trim(), testMode ? 1 : 0, status || 'active', notes || '', req.params.id]);
+
+    res.json({ success: true, message: 'Reklam kimliği güncellendi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Güncelleme hatası: ' + err.message });
+  }
+});
+
 app.patch('/api/admin/ad-keys/:id/toggle', requireAdmin, (req, res) => {
   try {
     db.run("UPDATE ad_keys SET status = CASE WHEN status = 'active' THEN 'paused' ELSE 'active' END WHERE id = ?", [req.params.id]);

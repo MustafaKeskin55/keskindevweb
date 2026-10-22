@@ -792,7 +792,44 @@ function initBrandingForm() {
 // 10. REKLAM KIMLIKLERI KASASI (VAULT)
 // ==========================================
 window.openAdKeyModal = function() {
+  const form = document.getElementById('form-add-adkey');
   const modal = document.getElementById('modal-add-adkey');
+  const titleText = document.getElementById('modal-adkey-title');
+  const saveBtn = document.getElementById('btn-save-adkey');
+
+  if (form) form.reset();
+  const editId = document.getElementById('adkey-edit-id');
+  if (editId) editId.value = '';
+  if (titleText) titleText.textContent = 'Yeni Reklam Birimi Ekle';
+  if (saveBtn) saveBtn.textContent = 'Kasaya Kaydet';
+  if (modal) modal.classList.add('active');
+};
+
+window.openEditAdKeyModal = function(id) {
+  const key = currentAdKeys.find(k => k.id === id);
+  if (!key) return;
+
+  const form = document.getElementById('form-add-adkey');
+  const modal = document.getElementById('modal-add-adkey');
+  const titleText = document.getElementById('modal-adkey-title');
+  const saveBtn = document.getElementById('btn-save-adkey');
+
+  if (form) {
+    form.reset();
+    if (form.appId) form.appId.value = key.appId;
+    if (form.network) form.network.value = key.network;
+    if (form.platform) form.platform.value = key.platform;
+    if (form.unitType) form.unitType.value = key.unitType;
+    if (form.adUnitId) form.adUnitId.value = key.adUnitId;
+    if (form.notes) form.notes.value = key.notes || '';
+    if (form.status) form.status.value = key.status || 'active';
+    if (form.testMode) form.testMode.checked = Boolean(key.testMode);
+  }
+
+  const editId = document.getElementById('adkey-edit-id');
+  if (editId) editId.value = key.id;
+  if (titleText) titleText.textContent = 'Reklam Birimini Düzenle';
+  if (saveBtn) saveBtn.textContent = 'Değişiklikleri Kaydet';
   if (modal) modal.classList.add('active');
 };
 
@@ -859,6 +896,9 @@ function renderAdKeysTable(keys) {
       </td>
       <td>
         <div class="table-actions">
+          <button class="btn-icon-action edit" title="Düzenle" onclick="openEditAdKeyModal('${k.id}')">
+            ${AdminIcons.edit}
+          </button>
           <button class="btn-icon-action delete" title="Kasadan Sil" onclick="deleteAdKey('${k.id}')">
             ${AdminIcons.trash}
           </button>
@@ -1156,10 +1196,11 @@ function initModals() {
   const blogModal = document.getElementById('modal-add-blog');
   const blogForm = document.getElementById('form-add-blog');
 
-  // Ad Key Submit
+  // Ad Key Submit (Create & Edit)
   if (adKeyForm && adKeyModal) {
     adKeyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = document.getElementById('adkey-edit-id')?.value.trim();
       const payload = {
         appId: adKeyForm.appId.value,
         appName: adKeyForm.appId.options[adKeyForm.appId.selectedIndex]?.text || adKeyForm.appId.value,
@@ -1173,8 +1214,10 @@ function initModals() {
       };
 
       try {
-        const res = await fetch('/api/admin/ad-keys', {
-          method: 'POST',
+        const url = editId ? `/api/admin/ad-keys/${editId}` : '/api/admin/ad-keys';
+        const method = editId ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method,
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${adminToken}`
@@ -1183,8 +1226,9 @@ function initModals() {
         });
         const data = await res.json();
         if (res.ok) {
-          alertToast('Yeni reklam birim kimliği kasaya kaydedildi.');
+          alertToast(editId ? 'Reklam birim kimliği güncellendi.' : 'Yeni reklam birim kimliği kasaya kaydedildi.');
           adKeyForm.reset();
+          if (document.getElementById('adkey-edit-id')) document.getElementById('adkey-edit-id').value = '';
           adKeyModal.classList.remove('active');
           loadAdKeys();
           loadStats();

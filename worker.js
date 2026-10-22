@@ -515,6 +515,29 @@ export default {
         }
       }
 
+      // Ad Keys: PUT (Update)
+      if (pathname.match(/^\/api\/admin\/ad-keys\/[^\/]+$/) && method === 'PUT') {
+        const id = pathname.split('/')[4];
+        try {
+          const body = await request.json();
+          const { appId, appName, network, platform, unitType, adUnitId, testMode, status, notes } = body;
+
+          if (!appId || !network || !platform || !unitType || !adUnitId) {
+            return jsonResponse({ error: 'Tüm zorunlu alanları doldurun.' }, 400);
+          }
+
+          await env.DB.prepare(`
+            UPDATE ad_keys 
+            SET app_id = ?, app_name = ?, network = ?, platform = ?, unit_type = ?, ad_unit_id = ?, test_mode = ?, status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).bind(appId, appName || appId, network, platform, unitType, adUnitId.trim(), testMode ? 1 : 0, status || 'active', notes || '', id).run();
+
+          return jsonResponse({ success: true, message: 'Reklam kimliği güncellendi.' });
+        } catch (err) {
+          return jsonResponse({ error: 'Güncelleme hatası: ' + err.message }, 500);
+        }
+      }
+
       // Ad Keys: Toggle Status
       if (pathname.match(/^\/api\/admin\/ad-keys\/[^\/]+\/toggle$/) && method === 'PATCH') {
         const id = pathname.split('/')[4];
