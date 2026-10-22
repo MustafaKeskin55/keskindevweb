@@ -1,7 +1,11 @@
-name = "keskindev"
+name = "keskindevweb2"
 main = "worker.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
+
+[observability.logs]
+enabled = false
+invocation_logs = true
 
 # Custom Domain Routing
 routes = [
