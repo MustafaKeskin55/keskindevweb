@@ -60,6 +60,53 @@ function formatBlogRow(row) {
 
 // ==========================================
 // PUBLIC API ROUTES (Halka Açık, Giriş Gerektirmez)
+
+// Dinamik /app-ads.txt (AdMob Doğrulama)
+app.get('/app-ads.txt', (req, res) => {
+  try {
+    const rows = db.query("SELECT ad_unit_id FROM ad_keys WHERE (network LIKE '%AdMob%' OR network LIKE '%Google%') AND status = 'active'");
+    const pubIds = new Set();
+    pubIds.add('pub-1095649040834648');
+    (rows || []).forEach(r => {
+      const match = (r.ad_unit_id || '').match(/pub-(\d+)/);
+      if (match) pubIds.add('pub-' + match[1]);
+    });
+    let content = '';
+    pubIds.forEach(id => { content += 'google.com, ' + id + ', DIRECT, f08c47fec0942fa0\n'; });
+    res.type('text/plain; charset=utf-8').send(content);
+  } catch (err) {
+    res.type('text/plain; charset=utf-8').send('google.com, pub-1095649040834648, DIRECT, f08c47fec0942fa0\n');
+  }
+});
+
+// Dinamik /api/config
+app.get(['/api/config', '/api/public/config'], (req, res) => {
+  try {
+    const row = db.get("SELECT ad_unit_id FROM ad_keys WHERE (unit_type LIKE '%Banner%' OR unit_type LIKE '%banner%') AND status = 'active' ORDER BY updated_at DESC");
+    const activeBannerId = row?.ad_unit_id || 'ca-app-pub-1095649040834648/6353100367';
+    res.json({
+      adsEnabled: true,
+      bannerAdUnitId: activeBannerId,
+      ramazanMode: false,
+      prayerApiUrl: 'https://api.aladhan.com/',
+      quranApiUrl: 'https://api.quran.com/api/v4/',
+      audioCdnUrl: 'https://download.quranicaudio.com/quran/',
+      deletedWallpaperIds: ['wp_kabe_gece'],
+      customWallpapers: []
+    });
+  } catch (err) {
+    res.json({
+      adsEnabled: true,
+      bannerAdUnitId: 'ca-app-pub-1095649040834648/6353100367',
+      ramazanMode: false,
+      prayerApiUrl: 'https://api.aladhan.com/',
+      quranApiUrl: 'https://api.quran.com/api/v4/',
+      audioCdnUrl: 'https://download.quranicaudio.com/quran/',
+      deletedWallpaperIds: ['wp_kabe_gece'],
+      customWallpapers: []
+    });
+  }
+});
 // ==========================================
 
 // 1. Live Real Statistics (Directly calculated from real SQL tables - NO mock data)

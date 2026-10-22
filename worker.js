@@ -154,6 +154,79 @@ export default {
     // 1. PUBLIC API ROUTES
     // ==========================================
 
+    // ----------------------------------------------------
+    // DİNAMİK /app-ads.txt (AdMob Resmi Doğrulama)
+    // ----------------------------------------------------
+    if (pathname === '/app-ads.txt' && method === 'GET') {
+      try {
+        const { results } = await env.DB.prepare(
+          "SELECT ad_unit_id FROM ad_keys WHERE (network LIKE '%AdMob%' OR network LIKE '%Google%') AND status = 'active'"
+        ).all();
+
+        const pubIds = new Set();
+        pubIds.add('pub-1095649040834648');
+
+        (results || []).forEach(r => {
+          const match = (r.ad_unit_id || '').match(/pub-(\d+)/);
+          if (match) pubIds.add('pub-' + match[1]);
+        });
+
+        let content = '';
+        pubIds.forEach(pubId => {
+          content += 'google.com, ' + pubId + ', DIRECT, f08c47fec0942fa0\n';
+        });
+
+        return new Response(content, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      } catch (err) {
+        return new Response('google.com, pub-1095649040834648, DIRECT, f08c47fec0942fa0\n', {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' }
+        });
+      }
+    }
+
+    // ----------------------------------------------------
+    // DİNAMİK /api/config (Mümin Pusulası ve Uygulama Ayarları)
+    // ----------------------------------------------------
+    if ((pathname === '/api/config' || pathname === '/api/public/config') && method === 'GET') {
+      try {
+        const bannerRow = await env.DB.prepare(
+          "SELECT ad_unit_id FROM ad_keys WHERE (unit_type LIKE '%Banner%' OR unit_type LIKE '%banner%') AND status = 'active' ORDER BY updated_at DESC"
+        ).first();
+
+        const activeBannerId = bannerRow?.ad_unit_id || 'ca-app-pub-1095649040834648/6353100367';
+
+        return jsonResponse({
+          adsEnabled: true,
+          bannerAdUnitId: activeBannerId,
+          ramazanMode: false,
+          prayerApiUrl: 'https://api.aladhan.com/',
+          quranApiUrl: 'https://api.quran.com/api/v4/',
+          audioCdnUrl: 'https://download.quranicaudio.com/quran/',
+          deletedWallpaperIds: ['wp_kabe_gece'],
+          customWallpapers: []
+        });
+      } catch (err) {
+        return jsonResponse({
+          adsEnabled: true,
+          bannerAdUnitId: 'ca-app-pub-1095649040834648/6353100367',
+          ramazanMode: false,
+          prayerApiUrl: 'https://api.aladhan.com/',
+          quranApiUrl: 'https://api.quran.com/api/v4/',
+          audioCdnUrl: 'https://download.quranicaudio.com/quran/',
+          deletedWallpaperIds: ['wp_kabe_gece'],
+          customWallpapers: []
+        });
+      }
+    }
+
     // Live Real Stats
     if (pathname === '/api/public/stats' && method === 'GET') {
       try {
