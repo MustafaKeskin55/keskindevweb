@@ -61,21 +61,28 @@ function formatBlogRow(row) {
 // ==========================================
 // PUBLIC API ROUTES (Halka Açık, Giriş Gerektirmez)
 
-// Dinamik /app-ads.txt (AdMob Doğrulama)
+// Dinamik /app-ads.txt (AdMob Resmi Doğrulama - 100% Dynamic SQL)
 app.get('/app-ads.txt', (req, res) => {
   try {
-    const rows = db.query("SELECT ad_unit_id FROM ad_keys WHERE (network LIKE '%AdMob%' OR network LIKE '%Google%') AND status = 'active'");
-    const pubIds = new Set();
-    pubIds.add('pub-1095649040834648');
+    const rows = db.query("SELECT network, ad_unit_id FROM ad_keys WHERE status = 'active'");
+    const lines = new Set();
     (rows || []).forEach(r => {
-      const match = (r.ad_unit_id || '').match(/pub-(\d+)/);
-      if (match) pubIds.add('pub-' + match[1]);
+      const unitId = (r.ad_unit_id || '').trim();
+      const match = unitId.match(/pub-(\d+)/);
+      if (match) {
+        lines.add(`google.com, pub-${match[1]}, DIRECT, f08c47fec0942fa0`);
+      } else if (unitId.startsWith('pub-')) {
+        lines.add(`google.com, ${unitId}, DIRECT, f08c47fec0942fa0`);
+      }
     });
-    let content = '';
-    pubIds.forEach(id => { content += 'google.com, ' + id + ', DIRECT, f08c47fec0942fa0\n'; });
+
+    let content = Array.from(lines).join('\n');
+    if (content) content += '\n';
+
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.type('text/plain; charset=utf-8').send(content);
   } catch (err) {
-    res.type('text/plain; charset=utf-8').send('google.com, pub-1095649040834648, DIRECT, f08c47fec0942fa0\n');
+    res.status(500).type('text/plain; charset=utf-8').send('# Error generating app-ads.txt\n');
   }
 });
 

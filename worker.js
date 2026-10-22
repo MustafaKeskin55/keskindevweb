@@ -155,39 +155,40 @@ export default {
     // ==========================================
 
     // ----------------------------------------------------
-    // DİNAMİK /app-ads.txt (AdMob Resmi Doğrulama)
+    // DİNAMİK /app-ads.txt (AdMob Resmi Doğrulama - 100% Dynamic SQL)
     // ----------------------------------------------------
     if (pathname === '/app-ads.txt' && method === 'GET') {
       try {
         const { results } = await env.DB.prepare(
-          "SELECT ad_unit_id FROM ad_keys WHERE (network LIKE '%AdMob%' OR network LIKE '%Google%') AND status = 'active'"
+          "SELECT network, ad_unit_id FROM ad_keys WHERE status = 'active'"
         ).all();
 
-        const pubIds = new Set();
-        pubIds.add('pub-1095649040834648');
-
+        const lines = new Set();
         (results || []).forEach(r => {
-          const match = (r.ad_unit_id || '').match(/pub-(\d+)/);
-          if (match) pubIds.add('pub-' + match[1]);
+          const unitId = (r.ad_unit_id || '').trim();
+          const match = unitId.match(/pub-(\d+)/);
+          if (match) {
+            lines.add(`google.com, pub-${match[1]}, DIRECT, f08c47fec0942fa0`);
+          } else if (unitId.startsWith('pub-')) {
+            lines.add(`google.com, ${unitId}, DIRECT, f08c47fec0942fa0`);
+          }
         });
 
-        let content = '';
-        pubIds.forEach(pubId => {
-          content += 'google.com, ' + pubId + ', DIRECT, f08c47fec0942fa0\n';
-        });
+        let content = Array.from(lines).join('\n');
+        if (content) content += '\n';
 
         return new Response(content, {
           status: 200,
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
-            'Cache-Control': 'public, max-age=3600',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Access-Control-Allow-Origin': '*'
           }
         });
       } catch (err) {
-        return new Response('google.com, pub-1095649040834648, DIRECT, f08c47fec0942fa0\n', {
-          status: 200,
-          headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' }
+        return new Response('# Error generating app-ads.txt\n', {
+          status: 500,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
         });
       }
     }
