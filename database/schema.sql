@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. ADMIN USERS TABLE (Yönetim Paneli Güvenliği)
+-- 6. ADMIN USERS TABLE (Yönetim Paneli Güvenliği)cc
 CREATE TABLE IF NOT EXISTS admin_users (
     id VARCHAR(64) PRIMARY KEY,
     username VARCHAR(64) UNIQUE NOT NULL,
